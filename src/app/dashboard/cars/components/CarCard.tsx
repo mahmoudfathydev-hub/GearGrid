@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import Image from "next/image";
 import { Car } from "../types/cars";
-import { Calendar, DollarSign, Fuel, Settings, Tag } from "lucide-react";
+import { Calendar, Fuel, Settings, Tag } from "lucide-react";
 
 interface CarCardProps {
   car: Car;
@@ -13,38 +14,64 @@ export const CarCard: React.FC<CarCardProps> = ({
   isRecentlyAdded = false,
   forceSoldStatus = false,
 }) => {
-  const [availabilityStatus, setAvailabilityStatus] = useState<string>(
-    car.availability_status || "available",
-  );
-  const [loading, setLoading] = useState(false);
+  // Since we're using Redux stores and filtering sold cars in useReduxCars,
+  // we don't need to check sold status here
+  const availabilityStatus = forceSoldStatus ? "sold" : "available";
 
-  useEffect(() => {
-    // If forceSoldStatus is true, set to sold immediately
-    if (forceSoldStatus) {
-      setAvailabilityStatus("sold");
-      return;
-    }
+  // Helper function to validate and get proper image URL
+  const getImageUrl = (image?: string, images?: string[]) => {
+    console.log("getImageUrl called with:", { image, images });
 
-    // Only check sold status if not already sold
-    if (car.availability_status !== "sold") {
-      const checkSoldStatus = async () => {
+    // Try single image first
+    if (image && typeof image === "string" && image.trim() !== "") {
+      console.log("Using single image:", image);
+
+      // Check if it's a JSON array string
+      if (image.startsWith("[")) {
         try {
-          setLoading(true);
-          // Check if car exists in Sold_Cars table
-          const { checkIfCarSold } = await import("../../../../lib/supabase");
-          const isSold = await checkIfCarSold(Number(car.id));
-          setAvailabilityStatus(isSold ? "sold" : "available");
-        } catch (error) {
-          console.error("Error checking sold status:", error);
-          setAvailabilityStatus("available");
-        } finally {
-          setLoading(false);
+          const parsed = JSON.parse(image);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            console.log("Parsed JSON array, using first image:", parsed[0]);
+            return parsed[0];
+          }
+        } catch (e) {
+          console.log("Failed to parse JSON array");
         }
-      };
+      }
 
-      checkSoldStatus();
+      // Skip malformed URLs that start with { or other invalid characters
+      if (image.startsWith("{") || !image.includes("/")) {
+        console.log("Invalid image format, using placeholder");
+        return "/images/1.png";
+      }
+      return image;
     }
-  }, [car.id, car.availability_status]);
+
+    // Try images array
+    if (images && Array.isArray(images) && images.length > 0) {
+      const firstImage = images[0];
+      console.log("Using images array, first image:", firstImage);
+      if (
+        firstImage &&
+        typeof firstImage === "string" &&
+        firstImage.trim() !== ""
+      ) {
+        // Skip malformed URLs
+        if (
+          firstImage.startsWith("[") ||
+          firstImage.startsWith("{") ||
+          !firstImage.includes("/")
+        ) {
+          console.log("Invalid array image format, using placeholder");
+          return "/images/1.png";
+        }
+        return firstImage;
+      }
+    }
+
+    console.log("No valid image found, using placeholder");
+    return "/images/1.png"; // Test with known working image
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -72,7 +99,7 @@ export const CarCard: React.FC<CarCardProps> = ({
       case "reserved":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-blue-100 text-blue-800 border-blue-200";
     }
   };
 
@@ -85,7 +112,7 @@ export const CarCard: React.FC<CarCardProps> = ({
       case "reserved":
         return "Reserved";
       default:
-        return "Unknown";
+        return "Available";
     }
   };
 
@@ -109,31 +136,45 @@ export const CarCard: React.FC<CarCardProps> = ({
       )}
 
       <div className="aspect-w-16 aspect-h-9 bg-gray-100 relative overflow-hidden">
-        {car.image ? (
-          <img
-            src={car.image}
-            alt={`${car.brand} ${car.name}`}
-            className="w-full h-48 object-cover"
-          />
-        ) : (
-          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-            <div className="text-gray-400 text-center">
-              <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-lg"></div>
-              <p className="text-sm">No Image Available</p>
-            </div>
-          </div>
-        )}
+        {(() => {
+          const imageUrl = getImageUrl(car.image, car.images);
+          const isLocalImage = imageUrl.startsWith("/images/");
+
+          if (isLocalImage) {
+            return (
+              <img
+                src={imageUrl}
+                alt={`${car.brand} ${car.name}`}
+                className="w-full h-48 object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/images/placeholder.png";
+                }}
+              />
+            );
+          }
+
+          return (
+            <Image
+              src={imageUrl}
+              alt={`${car.brand} ${car.name}`}
+              width={400}
+              height={192}
+              className="w-full h-48 object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/placeholder.png";
+              }}
+            />
+          );
+        })()}
         <div className="absolute top-3 right-3">
           <span
             className={`text-xs font-medium px-2 py-1 rounded-full border ${getAvailabilityColor(
               availabilityStatus,
             )}`}
           >
-            {loading ? (
-              <span className="animate-pulse">Checking...</span>
-            ) : (
-              getAvailabilityText(availabilityStatus)
-            )}
+            {getAvailabilityText(availabilityStatus)}
           </span>
         </div>
       </div>
@@ -152,7 +193,6 @@ export const CarCard: React.FC<CarCardProps> = ({
 
         <div className="mb-3">
           <div className="flex items-center text-2xl font-bold text-gray-900">
-            <DollarSign className="w-5 h-5 mr-1 text-gray-500" />
             {formatPrice(car.price)}
           </div>
         </div>

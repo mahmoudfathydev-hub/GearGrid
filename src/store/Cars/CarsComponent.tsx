@@ -1,21 +1,12 @@
-import React, { useEffect } from "react";
-import { useAppDispatch } from "../../hooks";
-import { fetchCars, createSaleTransaction } from "./CarsSlice";
-import { useCars } from "../../hooks/useCars";
+import React, { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '../../hooks';
+import { fetchCars, selectCars } from './CarsSlice';
 
 const CarsComponent: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { cars, loading, error } = useCars();
-
-  const handleSellCar = (carId: number) => {
-    const soldCar = {
-      car_id: carId.toString(),
-      sold_at: new Date().toISOString(),
-      created_at: new Date().toISOString(),
-    };
-
-    dispatch(createSaleTransaction({ carId, soldCar }));
-  };
+  const cars = useAppSelector(selectCars);
+  const loading = useAppSelector((state) => state.cars.loading);
+  const error = useAppSelector((state) => state.cars.error);
 
   useEffect(() => {
     dispatch(fetchCars());
@@ -29,15 +20,7 @@ const CarsComponent: React.FC = () => {
       <h1>Cars</h1>
       <ul>
         {cars.map((car) => (
-          <li key={car.id}>
-            {car.name} - {car.brand}
-            <button
-              onClick={() => handleSellCar(car.id)}
-              style={{ marginLeft: "10px" }}
-            >
-              Sell
-            </button>
-          </li>
+          <li key={car.id}>{car.name} - {car.brand}</li>
         ))}
       </ul>
     </div>

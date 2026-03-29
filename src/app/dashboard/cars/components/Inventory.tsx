@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Car } from "../types/cars";
-import { useFetchCars } from "../hooks/useFetchCars";
+import { useReduxCars } from "../../../../hooks/useReduxCars";
 import { useFilterCars } from "../hooks/useFilterCars";
-import { useCarStats } from "../hooks/useCarStats";
 import { CarCard } from "./CarCard";
 import { SearchFilter } from "./SearchFilter";
 import { Pagination } from "./Pagination";
@@ -22,12 +21,7 @@ export const Inventory: React.FC<InventoryProps> = ({
     new Set(),
   );
 
-  const { cars, loading, error, pagination, refetch, addCar } = useFetchCars({
-    page: currentPage,
-    itemsPerPage: 12,
-  });
-
-  const { stats } = useCarStats();
+  const { cars, loading, error, refetch, stats } = useReduxCars();
 
   const {
     filters,
@@ -45,8 +39,8 @@ export const Inventory: React.FC<InventoryProps> = ({
   }, [refreshTrigger, refetch]);
 
   const handleCarAdded = (newCar: Car) => {
-    addCar(newCar);
     setRecentlyAddedCars((prev) => new Set(prev).add(newCar.id));
+    onCarAdded?.(newCar);
 
     setTimeout(() => {
       setRecentlyAddedCars((prev) => {
@@ -55,8 +49,6 @@ export const Inventory: React.FC<InventoryProps> = ({
         return newSet;
       });
     }, 5000);
-
-    onCarAdded?.(newCar);
   };
 
   const handlePageChange = (page: number) => {
@@ -65,6 +57,20 @@ export const Inventory: React.FC<InventoryProps> = ({
 
   const isRecentlyAdded = (carId: string) => {
     return recentlyAddedCars.has(carId);
+  };
+
+  // Simple pagination
+  const itemsPerPage = 12;
+  const totalPages = Math.ceil(filteredCars.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCars = filteredCars.slice(startIndex, endIndex);
+
+  const pagination = {
+    currentPage,
+    totalPages,
+    totalItems: filteredCars.length,
+    itemsPerPage,
   };
 
   const getRecentlyAddedFromData = (cars: Car[]) => {
@@ -193,9 +199,9 @@ export const Inventory: React.FC<InventoryProps> = ({
         </div>
       )}
 
-      {!loading && filteredCars.length > 0 && (
+      {!loading && paginatedCars.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCars.map((car) => (
+          {paginatedCars.map((car) => (
             <CarCard
               key={car.id}
               car={car}
@@ -205,15 +211,9 @@ export const Inventory: React.FC<InventoryProps> = ({
         </div>
       )}
 
-      {!loading && filteredCars.length > 0 && (
+      {!loading && paginatedCars.length > 0 && (
         <Pagination
-          pagination={{
-            ...pagination,
-            totalItems: filteredCars.length,
-            totalPages: Math.ceil(
-              filteredCars.length / pagination.itemsPerPage,
-            ),
-          }}
+          pagination={pagination}
           onPageChange={handlePageChange}
           loading={loading}
         />

@@ -358,24 +358,35 @@ export async function getTransmissions() {
 
 // Helper to map Supabase data to Car interface
 function mapSupabaseToCar(car: any): Car {
-  let imageUrl = "/images/placeholder.png";
+  let imageUrl = "/images/1.png"; // Use known working image for testing
 
   // Handle different formats of image_urls
   if (car.image_urls) {
+    console.log("Processing image_urls for car", car.id, ":", car.image_urls);
+
     if (typeof car.image_urls === "string") {
       try {
         const parsed = JSON.parse(car.image_urls);
+        console.log("Parsed image_urls:", parsed);
         imageUrl =
           Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : imageUrl;
       } catch {
-        imageUrl = car.image_urls.startsWith("http")
-          ? car.image_urls
-          : imageUrl;
+        console.log("Failed to parse image_urls as JSON, using as string");
+        // Check if it's a valid URL
+        if (
+          car.image_urls.startsWith("http") ||
+          car.image_urls.startsWith("/images/")
+        ) {
+          imageUrl = car.image_urls;
+        }
       }
     } else if (Array.isArray(car.image_urls)) {
+      console.log("image_urls is array:", car.image_urls);
       imageUrl = car.image_urls.length > 0 ? car.image_urls[0] : imageUrl;
     }
   }
+
+  console.log("Final imageUrl for car", car.id, ":", imageUrl);
 
   // Get all images
   let allImages: string[] = [];

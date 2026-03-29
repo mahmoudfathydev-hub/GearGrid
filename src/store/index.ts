@@ -8,6 +8,7 @@ import userReducer from "./User/UserSlice";
 import soldCarsReducer from "./Sold_Cars/Sold_CarsSlice";
 import carTypeReducer from "./Car_Type/Car_TypeSlice";
 import monthlySalesReducer from "./Monthly_Sales/Monthly_SalesSlice";
+import salesReducer from "./Sales/SalesSlice";
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     soldCars: soldCarsReducer,
     carType: carTypeReducer,
     monthlySales: monthlySalesReducer,
+    sales: salesReducer,
   },
 });
 

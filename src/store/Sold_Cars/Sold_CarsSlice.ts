@@ -8,6 +8,7 @@ import {
 import { RootState } from "../index";
 import { SoldCars } from "./types";
 import { supabase } from "../../lib/supabaseClient";
+import { createSaleTransaction } from "../Sales/SalesSlice";
 
 // Async thunks
 export const fetchSoldCars = createAsyncThunk<
@@ -136,7 +137,22 @@ const soldCarsSlice = createSlice({
         (state, action: PayloadAction<number>) => {
           soldCarsAdapter.removeOne(state, action.payload);
         },
-      );
+      )
+      // Handle createSaleTransaction
+      .addCase(createSaleTransaction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createSaleTransaction.fulfilled, (state, action) => {
+        state.loading = false;
+        // Note: The actual sold car data is added to the database in the thunk
+        // We could refetch sold cars here or add the data directly if we have it
+        // For now, we'll rely on the existing fetchSoldCars to keep the state updated
+      })
+      .addCase(createSaleTransaction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to create sale transaction";
+      });
   },
 });
 

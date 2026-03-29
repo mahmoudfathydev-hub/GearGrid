@@ -2,7 +2,52 @@
 
 import { useState, useEffect } from "react";
 import { Car, PaginationInfo } from "../types/cars";
-import { getCars } from "../../../../lib/supabase";
+import { getCars, checkIfCarSold } from "../../../../lib/supabase";
+
+// Helper function to validate image URLs
+const validateImageUrl = (image?: string, images?: string[]): string => {
+  // Try single image first
+  if (image && typeof image === "string" && image.trim() !== "") {
+    // Check if it's a JSON array string
+    if (image.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(image);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed[0];
+        }
+      } catch (e) {
+        console.log("Failed to parse JSON array");
+      }
+    }
+
+    // Skip malformed URLs that start with { or other invalid characters
+    if (image.startsWith("{") || !image.includes("/")) {
+      return "/images/1.png";
+    }
+    return image;
+  }
+
+  // Try images array
+  if (images && Array.isArray(images) && images.length > 0) {
+    const firstImage = images[0];
+    if (
+      firstImage &&
+      typeof firstImage === "string" &&
+      firstImage.trim() !== ""
+    ) {
+      if (
+        firstImage.startsWith("[") ||
+        firstImage.startsWith("{") ||
+        !firstImage.includes("/")
+      ) {
+        return "/images/1.png";
+      }
+      return firstImage;
+    }
+  }
+
+  return "/images/1.png";
+};
 
 interface FetchCarsOptions {
   page?: number;
@@ -41,19 +86,28 @@ export const useFetchCars = (options: FetchCarsOptions = {}) => {
           name: dbCar.model,
           brand: dbCar.brand,
           price: dbCar.price,
-          image: dbCar.image,
+          image: validateImageUrl(dbCar.image, dbCar.images),
+          images: dbCar.images,
           description: dbCar.description,
           year: dbCar.year,
           mileage: dbCar.mileage,
           fuel_type: dbCar.fuelType,
           transmission: dbCar.transmission,
           color: dbCar.color,
-          availability_status: "available", // Default status since DB doesn't have this field
           created_at: new Date().toISOString(), // Default since DB doesn't have this field
         }));
 
+        // Filter out sold cars
+        const availableCars = [];
+        for (const car of mappedCars) {
+          const isSold = await checkIfCarSold(Number(car.id));
+          if (!isSold) {
+            availableCars.push(car);
+          }
+        }
+
         // Apply filters
-        let filteredCars = mappedCars;
+        let filteredCars = availableCars;
 
         if (filters.brand) {
           filteredCars = filteredCars.filter(
@@ -63,7 +117,10 @@ export const useFetchCars = (options: FetchCarsOptions = {}) => {
 
         if (filters.availability && filters.availability !== "all") {
           filteredCars = filteredCars.filter(
-            (car) => car.availability_status === filters.availability,
+            (car) =>
+              car.availability_status === filters.availability ||
+              (!car.availability_status &&
+                filters.availability === "available"),
           );
         }
 
@@ -111,18 +168,27 @@ export const useFetchCars = (options: FetchCarsOptions = {}) => {
           name: dbCar.model,
           brand: dbCar.brand,
           price: dbCar.price,
-          image: dbCar.image,
+          image: validateImageUrl(dbCar.image, dbCar.images),
+          images: dbCar.images,
           description: dbCar.description,
           year: dbCar.year,
           mileage: dbCar.mileage,
           fuel_type: dbCar.fuelType,
           transmission: dbCar.transmission,
           color: dbCar.color,
-          availability_status: "available",
           created_at: new Date().toISOString(),
         }));
 
-        let filteredCars = mappedCars;
+        // Filter out sold cars
+        const availableCars = [];
+        for (const car of mappedCars) {
+          const isSold = await checkIfCarSold(Number(car.id));
+          if (!isSold) {
+            availableCars.push(car);
+          }
+        }
+
+        let filteredCars = availableCars;
 
         if (filters.brand) {
           filteredCars = filteredCars.filter(
@@ -132,7 +198,10 @@ export const useFetchCars = (options: FetchCarsOptions = {}) => {
 
         if (filters.availability && filters.availability !== "all") {
           filteredCars = filteredCars.filter(
-            (car) => car.availability_status === filters.availability,
+            (car) =>
+              car.availability_status === filters.availability ||
+              (!car.availability_status &&
+                filters.availability === "available"),
           );
         }
 

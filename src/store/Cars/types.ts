@@ -14,5 +14,5 @@ export interface Cars {
   color: string;
   miles: number;
   year_of_manufacture: number;
-  image_urls: string;
+  image_urls: string[] | string;
 }
