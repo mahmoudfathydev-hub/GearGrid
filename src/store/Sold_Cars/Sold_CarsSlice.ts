@@ -1,4 +1,10 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  PayloadAction,
+  createEntityAdapter,
+  EntityState,
+} from "@reduxjs/toolkit";
 import { RootState } from "../index";
 import { SoldCars } from "./types";
 import { supabase } from "../../lib/supabaseClient";
@@ -75,18 +81,18 @@ export const deleteSoldCar = createAsyncThunk<
   }
 });
 
-// Initial state
-interface SoldCarsState {
-  soldCars: SoldCars[];
+// Refactored SoldCarsSlice to use normalized state shape
+const soldCarsAdapter = createEntityAdapter<SoldCars>();
+
+interface SoldCarsState extends EntityState<SoldCars, number> {
   loading: boolean;
   error: string | null;
 }
 
-const initialState: SoldCarsState = {
-  soldCars: [],
+const initialState: SoldCarsState = soldCarsAdapter.getInitialState({
   loading: false,
   error: null,
-};
+});
 
 // Slice
 const soldCarsSlice = createSlice({
@@ -103,7 +109,7 @@ const soldCarsSlice = createSlice({
         fetchSoldCars.fulfilled,
         (state, action: PayloadAction<SoldCars[]>) => {
           state.loading = false;
-          state.soldCars = action.payload;
+          soldCarsAdapter.setAll(state, action.payload);
         },
       )
       .addCase(
@@ -116,35 +122,33 @@ const soldCarsSlice = createSlice({
       .addCase(
         createSoldCar.fulfilled,
         (state, action: PayloadAction<SoldCars>) => {
-          state.soldCars.push(action.payload);
+          soldCarsAdapter.addOne(state, action.payload);
         },
       )
       .addCase(
         updateSoldCar.fulfilled,
         (state, action: PayloadAction<SoldCars>) => {
-          const index = state.soldCars.findIndex(
-            (soldCar) => soldCar.id === action.payload.id,
-          );
-          if (index !== -1) {
-            state.soldCars[index] = action.payload;
-          }
+          soldCarsAdapter.upsertOne(state, action.payload);
         },
       )
       .addCase(
         deleteSoldCar.fulfilled,
         (state, action: PayloadAction<number>) => {
-          state.soldCars = state.soldCars.filter(
-            (soldCar) => soldCar.id !== action.payload,
-          );
+          soldCarsAdapter.removeOne(state, action.payload);
         },
       );
   },
 });
 
 // Selectors
-export const selectSoldCars = (state: RootState) =>
-  state.soldCars?.soldCars || [];
-export const selectSoldCarById = (id: number) => (state: RootState) =>
-  state.soldCars?.soldCars.find((soldCar: SoldCars) => soldCar.id === id);
+const soldCarsSelectors = soldCarsAdapter.getSelectors<RootState>(
+  (state) => state.soldCars,
+);
+
+export const {
+  selectAll: selectAllSoldCars,
+  selectById: selectSoldCarById,
+  selectIds: selectSoldCarIds,
+} = soldCarsSelectors;
 
 export default soldCarsSlice.reducer;

@@ -5,34 +5,46 @@ import { Calendar, DollarSign, Fuel, Settings, Tag } from "lucide-react";
 interface CarCardProps {
   car: Car;
   isRecentlyAdded?: boolean;
+  forceSoldStatus?: boolean;
 }
 
 export const CarCard: React.FC<CarCardProps> = ({
   car,
   isRecentlyAdded = false,
+  forceSoldStatus = false,
 }) => {
-  const [availabilityStatus, setAvailabilityStatus] =
-    useState<string>("available");
+  const [availabilityStatus, setAvailabilityStatus] = useState<string>(
+    car.availability_status || "available",
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const checkSoldStatus = async () => {
-      try {
-        setLoading(true);
-        // Check if car exists in Sold_Cars table
-        const { checkIfCarSold } = await import("../../../../lib/supabase");
-        const isSold = await checkIfCarSold(Number(car.id));
-        setAvailabilityStatus(isSold ? "sold" : "available");
-      } catch (error) {
-        console.error("Error checking sold status:", error);
-        setAvailabilityStatus("available");
-      } finally {
-        setLoading(false);
-      }
-    };
+    // If forceSoldStatus is true, set to sold immediately
+    if (forceSoldStatus) {
+      setAvailabilityStatus("sold");
+      return;
+    }
 
-    checkSoldStatus();
-  }, [car.id]);
+    // Only check sold status if not already sold
+    if (car.availability_status !== "sold") {
+      const checkSoldStatus = async () => {
+        try {
+          setLoading(true);
+          // Check if car exists in Sold_Cars table
+          const { checkIfCarSold } = await import("../../../../lib/supabase");
+          const isSold = await checkIfCarSold(Number(car.id));
+          setAvailabilityStatus(isSold ? "sold" : "available");
+        } catch (error) {
+          console.error("Error checking sold status:", error);
+          setAvailabilityStatus("available");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      checkSoldStatus();
+    }
+  }, [car.id, car.availability_status]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -102,15 +114,12 @@ export const CarCard: React.FC<CarCardProps> = ({
             src={car.image}
             alt={`${car.brand} ${car.name}`}
             className="w-full h-48 object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "/images/placeholder.png";
-            }}
           />
         ) : (
           <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
             <div className="text-gray-400 text-center">
               <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-lg"></div>
-              <p className="text-sm">No Image</p>
+              <p className="text-sm">No Image Available</p>
             </div>
           </div>
         )}

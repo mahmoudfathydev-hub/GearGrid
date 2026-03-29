@@ -1,12 +1,21 @@
-import React, { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../../hooks';
-import { fetchCars, selectCars } from './CarsSlice';
+import React, { useEffect } from "react";
+import { useAppDispatch } from "../../hooks";
+import { fetchCars, createSaleTransaction } from "./CarsSlice";
+import { useCars } from "../../hooks/useCars";
 
 const CarsComponent: React.FC = () => {
   const dispatch = useAppDispatch();
-  const cars = useAppSelector(selectCars);
-  const loading = useAppSelector((state) => state.cars.loading);
-  const error = useAppSelector((state) => state.cars.error);
+  const { cars, loading, error } = useCars();
+
+  const handleSellCar = (carId: number) => {
+    const soldCar = {
+      car_id: carId.toString(),
+      sold_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    };
+
+    dispatch(createSaleTransaction({ carId, soldCar }));
+  };
 
   useEffect(() => {
     dispatch(fetchCars());
@@ -20,7 +29,15 @@ const CarsComponent: React.FC = () => {
       <h1>Cars</h1>
       <ul>
         {cars.map((car) => (
-          <li key={car.id}>{car.name} - {car.brand}</li>
+          <li key={car.id}>
+            {car.name} - {car.brand}
+            <button
+              onClick={() => handleSellCar(car.id)}
+              style={{ marginLeft: "10px" }}
+            >
+              Sell
+            </button>
+          </li>
         ))}
       </ul>
     </div>

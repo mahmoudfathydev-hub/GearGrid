@@ -2,6 +2,11 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../index";
 import { Cars } from "./types";
 import { supabase } from "../../lib/supabaseClient";
+import { createEntityAdapter, EntityState } from "@reduxjs/toolkit";
+import { SoldCars } from "../Sold_Cars/types";
+import { createSoldCar } from "../Sold_Cars/Sold_CarsSlice";
+
+const carsAdapter = createEntityAdapter<Cars>();
 
 // Async thunks
 export const fetchCars = createAsyncThunk<
@@ -72,18 +77,37 @@ export const deleteCar = createAsyncThunk<
   }
 });
 
+export const createSaleTransaction = createAsyncThunk<
+  void,
+  { carId: number; soldCar: Partial<SoldCars> },
+  { rejectValue: string }
+>(
+  "cars/createSaleTransaction",
+  async ({ carId, soldCar }, { dispatch, rejectWithValue }) => {
+    try {
+      // Create the sold car record
+      await dispatch(createSoldCar(soldCar)).unwrap();
+
+      // Delete the car from the Cars table
+      await dispatch(deleteCar(carId)).unwrap();
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      return rejectWithValue(errorMessage);
+    }
+  },
+);
+
 // Initial state
-interface CarsState {
-  cars: Cars[];
+interface CarsState extends EntityState<Cars, number> {
   loading: boolean;
   error: string | null;
 }
 
-const initialState: CarsState = {
-  cars: [],
+const initialState: CarsState = carsAdapter.getInitialState({
   loading: false,
   error: null,
-};
+});
 
 // Slice
 const carsSlice = createSlice({
@@ -98,7 +122,7 @@ const carsSlice = createSlice({
       })
       .addCase(fetchCars.fulfilled, (state, action: PayloadAction<Cars[]>) => {
         state.loading = false;
-        state.cars = action.payload;
+        carsAdapter.setAll(state, action.payload);
       })
       .addCase(
         fetchCars.rejected,
@@ -108,25 +132,30 @@ const carsSlice = createSlice({
         },
       )
       .addCase(createCar.fulfilled, (state, action: PayloadAction<Cars>) => {
-        state.cars.push(action.payload);
+        carsAdapter.addOne(state, action.payload);
       })
       .addCase(updateCar.fulfilled, (state, action: PayloadAction<Cars>) => {
-        const index = state.cars.findIndex(
-          (car) => car.id === action.payload.id,
-        );
-        if (index !== -1) {
-          state.cars[index] = action.payload;
-        }
+        carsAdapter.upsertOne(state, action.payload);
       })
       .addCase(deleteCar.fulfilled, (state, action: PayloadAction<number>) => {
-        state.cars = state.cars.filter((car) => car.id !== action.payload);
+        carsAdapter.removeOne(state, action.payload);
       });
   },
 });
 
 // Selectors
-export const selectCars = (state: RootState) => state.cars?.cars || [];
-export const selectCarById = (id: number) => (state: RootState) =>
-  state.cars?.cars.find((car: Cars) => car.id === id);
+const carsSelectors = carsAdapter.getSelectors<RootState>(
+  (state) => state.cars,
+);
+
+export const selectCars = carsSelectors.selectAll;
+export const selectCarById = carsSelectors.selectById;
+
+// Adding memoized selectors for CarsSlice
+export const {
+  selectAll: selectAllCars,
+  selectById: selectCarByIdAdapter,
+  selectIds: selectCarIds,
+} = carsSelectors;
 
 export default carsSlice.reducer;

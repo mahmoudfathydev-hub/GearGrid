@@ -82,7 +82,10 @@ export default function SoldCarsPage() {
             <div className="text-right">
               <div className="text-2xl font-bold text-green-600">
                 {formatPrice(
-                  soldCars.reduce((total, soldCar) => total + soldCar.car.price, 0)
+                  soldCars.reduce(
+                    (total, soldCar) => total + soldCar.car.price,
+                    0,
+                  ),
                 )}
               </div>
               <div className="text-sm text-gray-600">Total Revenue</div>
@@ -100,7 +103,7 @@ export default function SoldCarsPage() {
                     new Date(soldCar.sold_at).getMonth() ===
                       new Date().getMonth() &&
                     new Date(soldCar.sold_at).getFullYear() ===
-                      new Date().getFullYear()
+                      new Date().getFullYear(),
                 ).length
               }
             </div>
@@ -115,29 +118,33 @@ export default function SoldCarsPage() {
                       new Date(soldCar.sold_at).getMonth() ===
                         new Date().getMonth() &&
                       new Date(soldCar.sold_at).getFullYear() ===
-                        new Date().getFullYear()
+                        new Date().getFullYear(),
                   )
-                  .reduce((total, soldCar) => total + soldCar.car.price, 0)
+                  .reduce((total, soldCar) => total + soldCar.car.price, 0),
               )}
             </div>
           </div>
           <div className="bg-blue-50 rounded-lg p-3">
-            <div className="text-blue-800 text-sm font-medium">Avg Sale Price</div>
+            <div className="text-blue-800 text-sm font-medium">
+              Avg Sale Price
+            </div>
             <div className="text-blue-900 text-xl font-bold">
               {soldCars.length > 0
                 ? formatPrice(
-                    soldCars.reduce((total, soldCar) => total + soldCar.car.price, 0) /
-                      soldCars.length
+                    soldCars.reduce(
+                      (total, soldCar) => total + soldCar.car.price,
+                      0,
+                    ) / soldCars.length,
                   )
                 : "$0"}
             </div>
           </div>
           <div className="bg-purple-50 rounded-lg p-3">
-            <div className="text-purple-800 text-sm font-medium">Latest Sale</div>
+            <div className="text-purple-800 text-sm font-medium">
+              Latest Sale
+            </div>
             <div className="text-purple-900 text-xl font-bold">
-              {soldCars.length > 0
-                ? formatDate(soldCars[0].sold_at)
-                : "N/A"}
+              {soldCars.length > 0 ? formatDate(soldCars[0].sold_at) : "N/A"}
             </div>
           </div>
         </div>
@@ -169,26 +176,17 @@ export default function SoldCarsPage() {
         </div>
       )}
 
-      {/* Sold Cars Grid */}
       {!loading && soldCars.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {soldCars.map((soldCar) => (
             <div key={soldCar.id} className="relative">
-              <CarCard car={soldCar.car} />
-              <div className="absolute top-3 left-3 z-20">
-                <span className="bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                  SOLD
-                </span>
-              </div>
+              <CarCard car={soldCar.car} forceSoldStatus={true} />
+
               <div className="mt-2 bg-gray-50 rounded-lg p-3">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center text-gray-600">
                     <Calendar className="w-4 h-4 mr-1" />
                     Sold {formatDate(soldCar.sold_at)}
-                  </div>
-                  <div className="flex items-center text-green-600 font-semibold">
-                    <DollarSign className="w-4 h-4 mr-1" />
-                    {formatPrice(soldCar.car.price)}
                   </div>
                 </div>
               </div>
@@ -197,7 +195,6 @@ export default function SoldCarsPage() {
         </div>
       )}
 
-      {/* Pagination */}
       {!loading && soldCars.length > 0 && (
         <Pagination
           pagination={pagination}

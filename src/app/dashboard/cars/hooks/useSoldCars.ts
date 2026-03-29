@@ -11,19 +11,40 @@ interface SoldCar {
   car: Car;
 }
 
-interface SoldCarsResponse {
-  soldCars: SoldCar[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-  };
+interface CarData {
+  id: string;
+  name: string;
+  brand: string;
+  price: number;
+  image_urls: string[];
+  description: string;
+  year_of_manufacture?: number;
+  miles?: number;
+  fuel_type?: string;
+  transmission?: string;
+  color?: string;
+  created_at: string;
+}
+
+interface SoldCarData {
+  id: string;
+  car_id: string;
+  sold_at: string;
+  created_at: string;
 }
 
 interface UseSoldCarsOptions {
   page?: number;
   itemsPerPage?: number;
+  filter?: {
+    brand?: string;
+    model?: string;
+    year?: number;
+    price?: {
+      min?: number;
+      max?: number;
+    };
+  };
 }
 
 export const useSoldCars = (options: UseSoldCarsOptions = {}) => {
@@ -47,7 +68,7 @@ export const useSoldCars = (options: UseSoldCarsOptions = {}) => {
 
         const supabase = createClient();
 
-        // Get sold cars with car details
+        // First get sold cars
         const {
           data: soldCarsData,
           error: fetchError,
@@ -64,35 +85,81 @@ export const useSoldCars = (options: UseSoldCarsOptions = {}) => {
 
         console.log("Raw sold cars data:", soldCarsData);
 
-        // Transform the data - the car details are already in the sold car record
-        const transformedSoldCars: SoldCar[] = (soldCarsData || []).map(
-          (item: any) => {
-            console.log("Processing sold car item:", item);
-            console.log("Item price:", item.price);
-            console.log("Item image_urls:", item.image_urls);
+        // Then fetch car details for each sold car
+        const carIds = soldCarsData
+          ?.map((item: SoldCarData) => item.car_id)
+          .filter(Boolean);
+        let carsData: Record<string, CarData> = {};
 
-            // Map the database car data to our Car interface
+        if (carIds.length > 0) {
+          const { data: cars } = await supabase
+            .from("Cars")
+            .select("*")
+            .in("id", carIds);
+
+          // Create a lookup map
+          carsData = (cars || []).reduce(
+            (acc: Record<string, CarData>, car: CarData) => {
+              acc[car.id] = car;
+              return acc;
+            },
+            {},
+          );
+        }
+
+        // Transform the data - use the fetched car data
+        const transformedSoldCars: SoldCar[] = (soldCarsData || []).map(
+          (item: SoldCarData) => {
+            console.log("Processing sold car item:", item);
+            const carData = carsData[item.car_id]; // Get car from lookup
+            console.log("Car data from lookup:", carData);
+            console.log("Image URLs:", carData?.image_urls);
+
+            // Handle image URLs - it might be a string or array
+            let imageUrl = "";
+            if (carData?.image_urls) {
+              if (Array.isArray(carData.image_urls)) {
+                imageUrl = carData.image_urls[0];
+              } else if (typeof carData.image_urls === "string") {
+                // If it's a string that looks like JSON, try to parse it
+                try {
+                  const parsed = JSON.parse(carData.image_urls);
+                  imageUrl = Array.isArray(parsed) ? parsed[0] : "";
+                } catch {
+                  imageUrl = carData.image_urls;
+                }
+              }
+            }
+
             const car: Car = {
-              id: item.id?.toString() || "",
-              name: item.name || "",
-              brand: item.brand || "",
-              price: item.price || 0,
-              image: item.image_urls?.[0] || "",
-              description: item.description || "",
-              year: item.year_of_manufacture,
-              mileage: item.miles,
-              fuel_type: item.fuel_type,
-              transmission: item.transmission,
-              color: item.color,
+              id: carData?.id?.toString() || item.car_id || "",
+              name: carData?.name || "Unknown Car",
+              brand: carData?.brand || "Unknown Brand",
+              price: carData?.price || 0,
+              image:
+                imageUrl && imageUrl.startsWith("[")
+                  ? "" // Skip malformed URLs starting with [
+                  : imageUrl?.startsWith("http")
+                    ? imageUrl
+                    : `https://kknqhkkwffxflwfxheqv.supabase.co/storage/v1/object/public/${imageUrl}`,
+              description: carData?.description || "",
+              year: carData?.year_of_manufacture,
+              mileage: carData?.miles,
+              fuel_type: carData?.fuel_type,
+              transmission: carData?.transmission,
+              color: carData?.color,
               availability_status: "sold",
-              created_at: item.created_at || new Date().toISOString(),
+              created_at:
+                carData?.created_at ||
+                item.created_at ||
+                new Date().toISOString(),
             };
 
             console.log("Mapped car data:", car);
 
             return {
               id: item.id,
-              car_id: item.car_id || item.id?.toString(),
+              car_id: item.car_id,
               sold_at: item.sold_at,
               car,
             };
@@ -137,7 +204,7 @@ export const useSoldCars = (options: UseSoldCarsOptions = {}) => {
         setError(null);
         const supabase = createClient();
 
-        // Get sold cars with car details
+        // First get sold cars
         const {
           data: soldCarsData,
           error: fetchError,
@@ -154,35 +221,81 @@ export const useSoldCars = (options: UseSoldCarsOptions = {}) => {
 
         console.log("Raw sold cars data:", soldCarsData);
 
-        // Transform the data - the car details are already in the sold car record
-        const transformedSoldCars: SoldCar[] = (soldCarsData || []).map(
-          (item: any) => {
-            console.log("Processing sold car item:", item);
-            console.log("Item price:", item.price);
-            console.log("Item image_urls:", item.image_urls);
+        // Then fetch car details for each sold car
+        const carIds = soldCarsData
+          ?.map((item: SoldCarData) => item.car_id)
+          .filter(Boolean);
+        let carsData: Record<string, CarData> = {};
 
-            // Map the database car data to our Car interface
+        if (carIds.length > 0) {
+          const { data: cars } = await supabase
+            .from("Cars")
+            .select("*")
+            .in("id", carIds);
+
+          // Create a lookup map
+          carsData = (cars || []).reduce(
+            (acc: Record<string, CarData>, car: CarData) => {
+              acc[car.id] = car;
+              return acc;
+            },
+            {},
+          );
+        }
+
+        // Transform the data - use the fetched car data
+        const transformedSoldCars: SoldCar[] = (soldCarsData || []).map(
+          (item: SoldCarData) => {
+            console.log("Processing sold car item:", item);
+            const carData = carsData[item.car_id]; // Get car from lookup
+            console.log("Car data from lookup:", carData);
+            console.log("Image URLs:", carData?.image_urls);
+
+            // Handle image URLs - it might be a string or array
+            let imageUrl = "";
+            if (carData?.image_urls) {
+              if (Array.isArray(carData.image_urls)) {
+                imageUrl = carData.image_urls[0];
+              } else if (typeof carData.image_urls === "string") {
+                // If it's a string that looks like JSON, try to parse it
+                try {
+                  const parsed = JSON.parse(carData.image_urls);
+                  imageUrl = Array.isArray(parsed) ? parsed[0] : "";
+                } catch {
+                  imageUrl = carData.image_urls;
+                }
+              }
+            }
+
             const car: Car = {
-              id: item.id?.toString() || "",
-              name: item.name || "",
-              brand: item.brand || "",
-              price: item.price || 0,
-              image: item.image_urls?.[0] || "",
-              description: item.description || "",
-              year: item.year_of_manufacture,
-              mileage: item.miles,
-              fuel_type: item.fuel_type,
-              transmission: item.transmission,
-              color: item.color,
+              id: carData?.id?.toString() || item.car_id || "",
+              name: carData?.name || "Unknown Car",
+              brand: carData?.brand || "Unknown Brand",
+              price: carData?.price || 0,
+              image:
+                imageUrl && imageUrl.startsWith("[")
+                  ? "" // Skip malformed URLs starting with [
+                  : imageUrl?.startsWith("http")
+                    ? imageUrl
+                    : `https://kknqhkkwffxflwfxheqv.supabase.co/storage/v1/object/public/${imageUrl}`,
+              description: carData?.description || "",
+              year: carData?.year_of_manufacture,
+              mileage: carData?.miles,
+              fuel_type: carData?.fuel_type,
+              transmission: carData?.transmission,
+              color: carData?.color,
               availability_status: "sold",
-              created_at: item.created_at || new Date().toISOString(),
+              created_at:
+                carData?.created_at ||
+                item.created_at ||
+                new Date().toISOString(),
             };
 
             console.log("Mapped car data:", car);
 
             return {
               id: item.id,
-              car_id: item.car_id || item.id?.toString(),
+              car_id: item.car_id,
               sold_at: item.sold_at,
               car,
             };
