@@ -150,6 +150,9 @@ const carsSelectors = carsAdapter.getSelectors<RootState>(
 
 export const selectCars = carsSelectors.selectAll;
 export const selectCarById = carsSelectors.selectById;
+export const selectCarsLoading = (state: { cars: CarsState }) =>
+  state.cars.loading;
+export const selectCarsError = (state: { cars: CarsState }) => state.cars.error;
 
 // Adding memoized selectors for CarsSlice
 export const {

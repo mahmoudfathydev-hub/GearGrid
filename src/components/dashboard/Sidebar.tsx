@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart3,
   PlusCircle,
@@ -11,9 +11,22 @@ import {
   CreditCard,
   Car,
   Eye,
+  LogOut,
+  Trash2,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useUser } from "@/hooks/useUser";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { TriangleAlertIcon } from "lucide-react";
+import { toast } from "sonner";
 
 interface SidebarItem {
   id: string;
@@ -69,11 +82,37 @@ const sidebarItems: SidebarItem[] = [
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const pathname = usePathname();
+  const { signOut, deleteAccount, getCurrentUser } = useUser();
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  const handleSignOut = () => {
+    signOut();
+  };
+
+  const handleDeleteAccount = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    if (currentUserEmail) {
+      deleteAccount(currentUserEmail);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    const getCurrentUserInfo = async () => {
+      const user = await getCurrentUser();
+      setCurrentUserEmail(user?.email || null);
+    };
+    getCurrentUserInfo();
+  }, [getCurrentUser]);
 
   return (
     <div
@@ -119,7 +158,73 @@ export default function Sidebar() {
             })}
           </ul>
         </nav>
+
+        {/* User Actions Section */}
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="space-y-2">
+            {/* Sign Out Button */}
+            <button
+              onClick={handleSignOut}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-600 dark:hover:text-red-300`}
+            >
+              <LogOut className="w-5 h-5 flex-shrink-0" />
+              {!isCollapsed && <span className="font-medium">Sign Out</span>}
+            </button>
+
+            {/* Delete Account Button */}
+            <button
+              onClick={handleDeleteAccount}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-600 dark:hover:text-red-300`}
+            >
+              <Trash2 className="w-5 h-5 flex-shrink-0" />
+              {!isCollapsed && (
+                <span className="font-medium">Delete Account</span>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-neutral-900 border-red-500/50 p-0 overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+          <div className="p-6 text-center space-y-6">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
+              <TriangleAlertIcon className="w-8 h-8 text-red-500" />
+            </div>
+
+            <div className="space-y-2">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-white text-center">
+                  Delete Account
+                </DialogTitle>
+                <DialogDescription className="text-red-400 font-medium text-center text-base">
+                  Are you sure you want to delete your account? This action will{" "}
+                  <span className="underline decoration-2 font-bold">
+                    permanently delete
+                  </span>{" "}
+                  your account data from GearGrid and cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-2">
+              <button
+                onClick={confirmDeleteAccount}
+                className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-red-500/20"
+              >
+                Confirm Delete Account
+              </button>
+              <button
+                onClick={() => setIsDeleteDialogOpen(false)}
+                className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold py-4 rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

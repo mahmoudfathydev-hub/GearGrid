@@ -6,20 +6,26 @@ import Footer from "@/components/global/Footer/footer";
 import { CartAndFavoritesProvider } from "@/context/CartAndFavoritesContext";
 import AuthNotifications from "@/components/global/AuthNotifications";
 import { Suspense } from "react";
+import { AIChatBotProvider } from "@/components/global/AIChatBot";
 
-export default function LayoutProvider({ children }: { children: React.ReactNode }) {
+export default function LayoutProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith("/dashboard");
 
   return (
     <CartAndFavoritesProvider>
-      <Suspense fallback={null}>
-        <AuthNotifications />
-      </Suspense>
-      {!isDashboard && pathname !== "/signup" && <Navbar />}
-      <main className="flex-grow">{children}</main>
-      {!isDashboard && pathname !== "/signup" && <Footer />}
+      <AIChatBotProvider>
+        <Suspense fallback={null}>
+          <AuthNotifications />
+        </Suspense>
+        {!isDashboard && pathname !== "/signup" && <Navbar />}
+        <main className="flex-grow">{children}</main>
+        {!isDashboard && pathname !== "/signup" && <Footer />}
+      </AIChatBotProvider>
     </CartAndFavoritesProvider>
   );
 }
-

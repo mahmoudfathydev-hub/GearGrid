@@ -12,7 +12,9 @@ const mapToDashboardCar = (reduxCar: Cars): Car => ({
   name: reduxCar.name,
   brand: reduxCar.brand,
   price: reduxCar.price,
-  image: reduxCar.image_urls || undefined,
+  image: Array.isArray(reduxCar.image_urls)
+    ? reduxCar.image_urls[0]
+    : (reduxCar.image_urls as string | undefined),
   description: reduxCar.description,
   year: reduxCar.year_of_manufacture,
   mileage: reduxCar.miles,

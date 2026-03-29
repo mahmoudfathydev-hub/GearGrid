@@ -13,7 +13,7 @@ const mapToDashboardCar = (reduxCar: Cars): Car => ({
   name: reduxCar.name,
   brand: reduxCar.brand,
   price: reduxCar.price,
-  image: reduxCar.image_urls || undefined,
+  image: Array.isArray(reduxCar.image_urls) ? reduxCar.image_urls[0] : reduxCar.image_urls || undefined,
   description: reduxCar.description,
   year: reduxCar.year_of_manufacture,
   mileage: reduxCar.miles,
@@ -28,20 +28,20 @@ export const useSoldCarsWithDetails = () => {
   const soldCars = useSelector((state: RootState) => state.soldCars);
   const cars = useSelector((state: RootState) => state.cars);
 
-  
+
   React.useEffect(() => {
     dispatch(fetchSoldCars());
     dispatch(fetchCars());
   }, [dispatch]);
 
-  
+
   const soldCarsWithDetails = React.useMemo(() => {
     return Object.values(soldCars.entities)
       .filter((soldCar): soldCar is SoldCars => soldCar !== undefined)
       .map((soldCar) => {
-        
+
         if (soldCar.name && soldCar.brand) {
-          
+
           return {
             ...soldCar,
             car: {
@@ -49,7 +49,7 @@ export const useSoldCarsWithDetails = () => {
               name: soldCar.name,
               brand: soldCar.brand,
               price: soldCar.price || 0,
-              image: soldCar.image_urls,
+              image: Array.isArray(soldCar.image_urls) ? soldCar.image_urls[0] : soldCar.image_urls || undefined,
               images: Array.isArray(soldCar.image_urls)
                 ? soldCar.image_urls
                 : typeof soldCar.image_urls === "string"
@@ -65,7 +65,7 @@ export const useSoldCarsWithDetails = () => {
             } as Car,
           };
         } else {
-          
+
           return {
             ...soldCar,
             car: {

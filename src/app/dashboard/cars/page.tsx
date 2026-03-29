@@ -9,7 +9,6 @@ export default function CarsPage() {
   const [isCleaning, setIsCleaning] = useState(false);
 
   const handleCarAdded = () => {
-    // Trigger inventory refresh when a new car is added
     setRefreshTrigger((prev) => prev + 1);
   };
 
@@ -44,7 +43,6 @@ export default function CarsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
         <div className="mb-8 flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Car Inventory</h1>
@@ -52,31 +50,7 @@ export default function CarsPage() {
               Manage and browse your available vehicles
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleDeleteSoldCars}
-              disabled={isCleaning}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-            >
-              {isCleaning ? "Cleaning..." : "Delete Sold Cars"}
-            </button>
-            <button
-              onClick={async () => {
-                // Test sellCar function with car ID 1
-                const { sellCar } = await import("@/lib/supabase");
-                const result = await sellCar(1);
-                console.log("Test sellCar result:", result);
-                alert(JSON.stringify(result, null, 2));
-                setRefreshTrigger((prev) => prev + 1);
-              }}
-              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-            >
-              Test Sell Car ID 1
-            </button>
-          </div>
         </div>
-
-        {/* Main Content - Full Width Inventory */}
         <div className="w-full">
           <Inventory refreshTrigger={refreshTrigger} />
         </div>

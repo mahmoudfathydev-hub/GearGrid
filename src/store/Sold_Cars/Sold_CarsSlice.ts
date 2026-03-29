@@ -165,6 +165,7 @@ export const {
   selectAll: selectAllSoldCars,
   selectById: selectSoldCarById,
   selectIds: selectSoldCarIds,
+  selectAll: selectSoldCars,
 } = soldCarsSelectors;
 
 export default soldCarsSlice.reducer;

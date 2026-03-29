@@ -137,7 +137,7 @@ const Navbar = () => {
     { id: 1, name: "Home", href: "/" },
     { id: 2, name: "Services", href: "/Services" },
     { id: 3, name: "Cars", href: "/Cars" },
-    { id: 4, name: "Compare", href: "/Compare" },
+    { id: 4, name: "Compare", href: "/compare" },
   ];
 
   return (
