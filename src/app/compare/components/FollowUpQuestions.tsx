@@ -12,12 +12,23 @@ interface FollowUpQuestionsProps {
   answer: string;
 }
 
-export function FollowUpQuestions({ onAskQuestion, answer }: FollowUpQuestionsProps) {
+export function FollowUpQuestions({
+  onAskQuestion,
+  answer,
+}: FollowUpQuestionsProps) {
   const [followUpQuestion, setFollowUpQuestion] = useState("");
 
   const handleAskQuestion = () => {
     if (followUpQuestion.trim()) {
       onAskQuestion(followUpQuestion);
+      setFollowUpQuestion(""); // Clear the textarea after submission
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleAskQuestion();
     }
   };
 
@@ -54,13 +65,17 @@ export function FollowUpQuestions({ onAskQuestion, answer }: FollowUpQuestionsPr
 
           <div className="flex gap-3">
             <Textarea
-              placeholder="Type your own question about the compared cars..."
+              placeholder="Type your own question about the compared cars... (Press Enter to send)"
               value={followUpQuestion}
               onChange={(e) => setFollowUpQuestion(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="flex-1"
               rows={3}
             />
-            <Button onClick={handleAskQuestion} disabled={!followUpQuestion.trim()}>
+            <Button
+              onClick={handleAskQuestion}
+              disabled={!followUpQuestion.trim()}
+            >
               Ask
             </Button>
           </div>
@@ -68,7 +83,12 @@ export function FollowUpQuestions({ onAskQuestion, answer }: FollowUpQuestionsPr
           {answer && (
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="pt-4">
-                <p className="text-gray-800">{answer}</p>
+                <div className="flex items-start gap-2">
+                  <MessageCircle className="w-4 h-4 text-blue-600 mt-1 flex-shrink-0" />
+                  <p className="text-gray-800 text-sm leading-relaxed">
+                    {answer}
+                  </p>
+                </div>
               </CardContent>
             </Card>
           )}

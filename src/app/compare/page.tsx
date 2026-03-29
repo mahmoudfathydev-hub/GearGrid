@@ -2,21 +2,47 @@
 
 import { useState, useEffect } from "react";
 import { useCarComparison } from "@/hooks/useCarComparison";
-import { useCars } from "@/hooks/useCars";
 import { fetchCars } from "@/store/Cars/CarsSlice";
 import { useDispatch } from "react-redux";
-import { useAIChatBot } from "@/components/global/AIChatBot";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   CarSelectionSection,
-  ComparisonTable,
-  FollowUpQuestions,
   ComparePageHeader,
-  LoadingState,
 } from "./components";
+import { Cars } from "@/store/Cars/types";
+import { ThunkDispatch } from "@reduxjs/toolkit";
+import { AnyAction } from "redux";
+
+interface PerformanceDetails {
+  engine: string;
+  horsepower: number;
+  transmission: string;
+}
+
+interface FuelEfficiencyDetails {
+  fuelType: string;
+  mileage: number;
+}
+
+interface ComparisonData {
+  performance: PerformanceDetails;
+  fuelEfficiency: FuelEfficiencyDetails;
+  price: number;
+  pros: string[];
+  cons: string[];
+}
+
+interface ComparisonResult {
+  cars: Cars[];
+  comparison: ComparisonData[];
+  bestPerformers: Cars[];
+  worstPerformers: Cars[];
+}
 
 export default function ComparePage() {
-  const dispatch = useDispatch();
-  const { cars, loading } = useCars();
+  const dispatch: ThunkDispatch<unknown, unknown, AnyAction> = useDispatch();
+
   const {
     availableCars,
     selectedCarIds,
@@ -27,42 +53,35 @@ export default function ComparePage() {
     answerFollowUpQuestion,
   } = useCarComparison();
 
-  const { setComparisonData, setHasComparison } = useAIChatBot();
-  const [comparisonResult, setComparisonResult] = useState<any>(null);
+  const [comparisonResult, setComparisonResult] = useState<ComparisonResult | null>(null);
   const [answer, setAnswer] = useState("");
+  const [input, setInput] = useState("");
 
   useEffect(() => {
-    dispatch(fetchCars() as any);
+    dispatch(fetchCars());
   }, [dispatch]);
 
-  // Update global AI chatbot with comparison data
-  useEffect(() => {
-    if (comparisonResult) {
-      setComparisonData(comparisonResult);
-      setHasComparison(true);
-    } else {
-      setComparisonData(null);
-      setHasComparison(false);
-    }
-  }, [comparisonResult, setComparisonData, setHasComparison]);
-
-  const handleCompare = () => {
-    const result = generateComparison();
-    if (result) {
-      setComparisonResult(result);
-    }
-  };
-
-  const handleAskQuestion = (question: string) => {
-    if (question && comparisonResult) {
-      const response = answerFollowUpQuestion(question, comparisonResult);
+  const handleAskQuestion = () => {
+    if (input && comparisonResult) {
+      const response = answerFollowUpQuestion(input, comparisonResult);
       setAnswer(response);
     }
   };
 
-  if (loading) {
-    return <LoadingState />;
-  }
+  const handleComparison = () => {
+    const result = generateComparison();
+    if (result) {
+      setComparisonResult({
+        ...result,
+        bestPerformers: Array.isArray(result.bestPerformers)
+          ? (result.bestPerformers as Cars[])
+          : [],
+        worstPerformers: Array.isArray(result.worstPerformers)
+          ? (result.worstPerformers as Cars[])
+          : [],
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -75,20 +94,25 @@ export default function ComparePage() {
           onAddCar={addCarToComparison}
           onRemoveCar={removeCarFromComparison}
           onClearComparison={clearComparison}
-          onCompare={handleCompare}
+          onCompare={handleComparison}
         />
 
         {comparisonResult && (
-          <>
-            <div className="mb-8">
-              <ComparisonTable comparisonResult={comparisonResult} />
+          <div className="mt-8">
+            <h2 className="text-xl font-bold mb-4">AI Chatbot</h2>
+            <div className="flex gap-4">
+              <Input
+                value={input}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+                placeholder="Ask the AI about your comparison..."
+                className="flex-1"
+              />
+              <Button onClick={handleAskQuestion} className="bg-blue-600 hover:bg-blue-700">
+                Ask
+              </Button>
             </div>
-
-            <FollowUpQuestions
-              onAskQuestion={handleAskQuestion}
-              answer={answer}
-            />
-          </>
+            {answer && <p className="mt-4 text-gray-700">{answer}</p>}
+          </div>
         )}
       </div>
     </div>

@@ -32,14 +32,8 @@ export function AIChatBot({
   cars,
 }: AIChatBotProps) {
   const { isComparePage } = usePageDetection();
-  const {
-    isDragging,
-    elementRef,
-    getPositionClasses,
-    handleMouseDown,
-    handleTouchStart,
-  } = useDraggablePosition();
-
+  const { isDragging, elementRef, getPositionClasses, handleMouseDown, handleTouchStart } = useDraggablePosition();
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -101,7 +95,7 @@ export function AIChatBot({
   const callHuggingFaceAPI = async (userMessage: string) => {
     try {
       const context = generateContext();
-      const prompt = `You are a knowledgeable car expert. Use the following information to answer the user's question accurately and helpfully.
+      const prompt = `You are a knowledgeable car expert. Use the following information to answer user's question accurately and helpfully.
 
 ${context}
 
@@ -214,8 +208,8 @@ Provide a detailed, helpful response based on the car data above. If no specific
           onTouchStart={handleTouchStart}
           style={{ cursor: isDragging ? "grabbing" : "grab" }}
         >
-          <Card className="w-96 h-150 flex flex-col shadow-lg border-2 border-blue-200 z-40">
-            <CardHeader className="bg-linear-to-r from-blue-600 to-purple-600 text-white">
+          <Card className="w-96 h-[600px] flex flex-col shadow-lg border-2 border-blue-200 z-40">
+            <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Sparkles className="w-5 h-5" />
                 AI Car Assistant
@@ -231,51 +225,64 @@ Provide a detailed, helpful response based on the car data above. If no specific
             </CardHeader>
 
             <CardContent className="flex-1 flex flex-col p-0">
-              {messages.map((message, index) => (
-                <div key={index} className="flex gap-3">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.map((message) => (
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
-                      message.sender === "user"
-                        ? "bg-blue-600 text-white ml-auto"
-                        : "bg-gray-100 text-gray-900"
+                    key={message.id}
+                    className={`flex gap-3 ${
+                      message.sender === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">
-                      {message.text}
-                    </p>
-                    <p className="text-xs opacity-70 mt-1">
-                      {message.timestamp.toLocaleTimeString()}
-                    </p>
-                  </div>
+                    {message.sender === "bot" && (
+                      <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                    )}
 
-                  {message.sender === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center shrink-0">
-                      <User className="w-4 h-4 text-white" />
+                    <div
+                      className={`max-w-[80%] rounded-lg p-3 ${
+                        message.sender === "user"
+                          ? "bg-blue-600 text-white ml-auto"
+                          : "bg-gray-100 text-gray-900"
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">
+                        {message.text}
+                      </p>
+                      <p className="text-xs opacity-70 mt-1">
+                        {message.timestamp.toLocaleTimeString()}
+                      </p>
                     </div>
-                  )}
-                </div>
-              ))}
 
-              {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-white" />
+                    {message.sender === "user" && (
+                      <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                    )}
                   </div>
-                  <div className="bg-gray-100 rounded-lg p-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.1s" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.2s" }}
-                      ></div>
+                ))}
+
+                {isLoading && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="bg-gray-100 rounded-lg p-3">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div
+                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          style={{ animationDelay: "0.1s" }}
+                        ></div>
+                        <div
+                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          style={{ animationDelay: "0.2s" }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Suggested Questions */}
               {messages.length === 1 && (
