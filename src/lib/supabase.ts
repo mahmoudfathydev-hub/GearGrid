@@ -18,7 +18,7 @@ export interface DbCar {
   features_amenities: string;
   engine: string;
   horse_power: number;
-  transmission: string; // This should be TEXT, not number
+  transmission: string;
   color: string;
   miles: number;
   year_of_manufacture: number;
@@ -29,7 +29,6 @@ export async function insertCar(car: Omit<DbCar, "id" | "created_at">) {
   try {
     console.log("Inserting car into Supabase:", car);
 
-    // Check if Supabase is configured
     if (
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
       !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -62,7 +61,6 @@ export async function insertCar(car: Omit<DbCar, "id" | "created_at">) {
   } catch (error) {
     console.error("Error inserting car:", error);
 
-    // Provide more specific error messages
     if (error instanceof Error) {
       if (error.message.includes("JWT")) {
         throw new Error(
@@ -86,7 +84,6 @@ export async function insertCar(car: Omit<DbCar, "id" | "created_at">) {
   }
 }
 
-// Functions to save new options to database
 export async function insertBrand(brand: string) {
   try {
     console.log("Inserting brand:", brand);
@@ -238,7 +235,6 @@ export async function insertCarType(carType: string) {
   try {
     console.log("Inserting car type:", carType);
 
-    // Try the most common column names first
     const possibleColumns = ["car_type", "car-type", "type", "name"];
 
     for (const column of possibleColumns) {
@@ -261,11 +257,9 @@ export async function insertCarType(carType: string) {
           !error.message.includes("column") &&
           !error.message.includes("does not exist")
         ) {
-          // If it's not a column error, throw it
           throw error;
         }
       } catch (err) {
-        // Continue to next column if this one doesn't exist
         continue;
       }
     }
@@ -283,7 +277,6 @@ export async function insertCarType(carType: string) {
   }
 }
 
-// Functions to fetch existing data from database
 export async function getCarTypes() {
   try {
     const { data, error } = await supabase
@@ -293,7 +286,6 @@ export async function getCarTypes() {
 
     if (error) throw error;
 
-    // Extract car type values from different possible column names
     return (
       data
         ?.map((item) => {
@@ -356,11 +348,9 @@ export async function getTransmissions() {
   }
 }
 
-// Helper to map Supabase data to Car interface
 function mapSupabaseToCar(car: any): Car {
-  let imageUrl = "/images/1.png"; // Use known working image for testing
+  let imageUrl = "/images/1.png";
 
-  // Handle different formats of image_urls
   if (car.image_urls) {
     console.log("Processing image_urls for car", car.id, ":", car.image_urls);
 
@@ -372,7 +362,7 @@ function mapSupabaseToCar(car: any): Car {
           Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : imageUrl;
       } catch {
         console.log("Failed to parse image_urls as JSON, using as string");
-        // Check if it's a valid URL
+
         if (
           car.image_urls.startsWith("http") ||
           car.image_urls.startsWith("/images/")
@@ -388,7 +378,6 @@ function mapSupabaseToCar(car: any): Car {
 
   console.log("Final imageUrl for car", car.id, ":", imageUrl);
 
-  // Get all images
   let allImages: string[] = [];
   if (car.image_urls) {
     if (typeof car.image_urls === "string") {
@@ -406,7 +395,7 @@ function mapSupabaseToCar(car: any): Car {
   return {
     id: car.id.toString(),
     brand: car.brand,
-    model: car.name, // Using name as model
+    model: car.name,
     year: car.year_of_manufacture,
     price: car.price,
     fuelType: car.fuel_type,
@@ -441,14 +430,12 @@ export async function getCars() {
 
 export async function getCarStats() {
   try {
-    // Get available cars from Cars table
     const { data: carsData, error: carsError } = await supabase
       .from("Cars")
       .select("*");
 
     if (carsError) throw carsError;
 
-    // Get sold cars from Sold_Cars table
     const { data: soldCarsData, error: soldCarsError } = await supabase
       .from("Sold_Cars")
       .select("*");
@@ -464,7 +451,7 @@ export async function getCarStats() {
         .length,
       reserved: cars.filter((car) => car.availability_status === "reserved")
         .length,
-      sold: soldCars.length, // Count from Sold_Cars table
+      sold: soldCars.length,
     };
   } catch (error) {
     console.error("Error fetching car stats:", error);
@@ -479,35 +466,44 @@ export async function getCarStats() {
 
 export async function sellCar(carId: number) {
   try {
-    // First, get the car from Cars table
+    console.log("🚗 Starting sellCar process for car ID:", carId);
+
     const { data: carData, error: fetchError } = await supabase
       .from("Cars")
       .select("*")
       .eq("id", carId)
       .single();
 
+    console.log("📋 Car data fetched:", { carData, fetchError });
+
     if (fetchError) throw fetchError;
     if (!carData) throw new Error("Car not found");
 
-    // Add the car to Sold_Cars table
+    // Add the car to Sold_Cars table (basic approach)
+    console.log("💾 Inserting car into Sold_Cars table...");
     const { error: insertError } = await supabase.from("Sold_Cars").insert({
-      ...carData,
-      sold_at: new Date().toISOString(), // Add sold timestamp
+      car_id: carId,
+      sold_at: new Date().toISOString(),
     });
+
+    console.log("📝 Insert result:", { insertError });
 
     if (insertError) throw insertError;
 
-    // Remove the car from Cars table
+    console.log("🗑️ Deleting car from Cars table...");
     const { error: deleteError } = await supabase
       .from("Cars")
       .delete()
       .eq("id", carId);
 
+    console.log("🗑️ Delete result:", { deleteError });
+
     if (deleteError) throw deleteError;
 
+    console.log("✅ Car sold successfully!");
     return { success: true, message: "Car sold successfully" };
   } catch (error) {
-    console.error("Error selling car:", error);
+    console.error("❌ Error selling car:", error);
     return {
       success: false,
       message: error instanceof Error ? error.message : "Failed to sell car",
@@ -524,11 +520,10 @@ export async function checkIfCarSold(carId: number) {
       .single();
 
     if (error && error.code !== "PGRST116") {
-      // PGRST116 is "not found" error
       throw error;
     }
 
-    return !!data; // Return true if car exists in Sold_Cars table
+    return !!data;
   } catch (error) {
     console.error("Error checking if car is sold:", error);
     return false;
@@ -556,4 +551,44 @@ export async function getCarsByIds(ids: string[]) {
   }
 }
 
-// ... (rest of the code remains the same)
+export async function deleteAllSoldCars() {
+  try {
+    const { data: soldCarsData, error: soldCarsError } = await supabase
+      .from("Sold_Cars")
+      .select("id");
+
+    if (soldCarsError) throw soldCarsError;
+
+    if (!soldCarsData || soldCarsData.length === 0) {
+      return {
+        success: true,
+        message: "No sold cars found to delete",
+        deletedCount: 0,
+      };
+    }
+
+    const soldCarIds = soldCarsData.map((car) => car.id);
+    console.log("Found sold car IDs to delete:", soldCarIds);
+
+    const { error: deleteError, count } = await supabase
+      .from("Cars")
+      .delete()
+      .in("id", soldCarIds);
+
+    if (deleteError) throw deleteError;
+
+    return {
+      success: true,
+      message: `Successfully deleted ${count || soldCarIds.length} sold cars from Cars table`,
+      deletedCount: count || soldCarIds.length,
+    };
+  } catch (error) {
+    console.error("Error deleting sold cars:", error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to delete sold cars",
+      deletedCount: 0,
+    };
+  }
+}

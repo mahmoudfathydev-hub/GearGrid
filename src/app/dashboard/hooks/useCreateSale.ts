@@ -101,6 +101,7 @@ export const useCreateSale = () => {
 
       // Track the car as sold
       try {
+        // Insert basic sold car record (only use columns that exist in Sold_Cars table)
         const supabaseResponse = await supabase
           .from("Sold_Cars")
           .insert({
@@ -116,6 +117,21 @@ export const useCreateSale = () => {
           );
         } else {
           console.log("Car successfully tracked as sold");
+
+          // Now delete the car from Cars table
+          const { error: deleteError } = await supabase
+            .from("Cars")
+            .delete()
+            .eq("id", formData.carId);
+
+          if (deleteError) {
+            console.error(
+              "❌ Failed to delete car from Cars table:",
+              deleteError,
+            );
+          } else {
+            console.log("✅ Car successfully deleted from Cars table");
+          }
         }
       } catch (trackError) {
         console.error("Warning: Error tracking sold car:", trackError);
