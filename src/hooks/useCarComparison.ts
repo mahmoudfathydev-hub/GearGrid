@@ -69,7 +69,37 @@ export const useCarComparison = () => {
 
   const generateComparison = (): ComparisonResult | null => {
     if (selectedCarIds.length < 2) {
-      return null;
+      return {
+        cars: [],
+        comparison: [],
+        bestPerformers: {
+          performance: "Please select at least 2 cars to compare.",
+          fuelEfficiency: "Please select at least 2 cars to compare.",
+          price: "Please select at least 2 cars to compare.",
+        },
+        worstPerformers: {
+          performance: "Please select at least 2 cars to compare.",
+          fuelEfficiency: "Please select at least 2 cars to compare.",
+          price: "Please select at least 2 cars to compare.",
+        },
+      };
+    }
+
+    if (selectedCarIds.length > 3) {
+      return {
+        cars: [],
+        comparison: [],
+        bestPerformers: {
+          performance: "You can compare a maximum of 3 cars.",
+          fuelEfficiency: "You can compare a maximum of 3 cars.",
+          price: "You can compare a maximum of 3 cars.",
+        },
+        worstPerformers: {
+          performance: "You can compare a maximum of 3 cars.",
+          fuelEfficiency: "You can compare a maximum of 3 cars.",
+          price: "You can compare a maximum of 3 cars.",
+        },
+      };
     }
 
     const selectedCars = availableCars.filter((car) =>
