@@ -4,7 +4,7 @@ import "./globals.css";
 import LayoutProvider from "@/components/providers/LayoutProvider";
 import { ReduxProvider } from "@/components/providers/ReduxProvider";
 import { Toaster } from "@/components/ui/sonner";
-import { GlobalAIChatBot } from "./components/GlobalAIChatBot";
+import { SimpleChatBot } from "@/components/global/AIChatBot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,8 +33,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ReduxProvider>
-          <LayoutProvider>{children}</LayoutProvider>
-          <GlobalAIChatBot />
+          <LayoutProvider>
+            {children}
+            <SimpleChatBot />
+          </LayoutProvider>
           <Toaster />
         </ReduxProvider>
       </body>

@@ -248,6 +248,23 @@ export const useCarComparison = () => {
       return `For long trips, the ${bestForTrips.brand} ${bestForTrips.name} is your best bet. With ${bestForTrips.horse_power} HP, it has plenty of power for highway driving. The ${bestForTrips.car_type} body style offers comfort and space, and its ${bestForTrips.fuel_type} engine provides good range.`;
     }
 
+    // Price question
+    if (
+      lowerQuestion.includes("price") ||
+      lowerQuestion.includes("cost") ||
+      lowerQuestion.includes("egypt")
+    ) {
+      const lowestPrice = cars.reduce((lowest, car) => {
+        return car.price < lowest.price ? car : lowest;
+      });
+
+      const highestPrice = cars.reduce((highest, car) => {
+        return car.price > highest.price ? car : highest;
+      });
+
+      return `In Egypt, the ${lowestPrice.brand} ${lowestPrice.name} costs $${lowestPrice.price.toLocaleString()} and the ${highestPrice.brand} ${highestPrice.name} costs $${highestPrice.price.toLocaleString()}. Prices may vary based on import duties, taxes, and local market conditions.`;
+    }
+
     // Default response
     return (
       "Based on the comparison data, consider your specific needs. The " +
@@ -256,7 +273,7 @@ export const useCarComparison = () => {
       bestPerformers.fuelEfficiency +
       " is most fuel-efficient, and the " +
       bestPerformers.price +
-      " provides the best value."
+      " provides the best value. You can also ask me about specific features like fuel efficiency, maintenance costs, or performance metrics!"
     );
   };
 
