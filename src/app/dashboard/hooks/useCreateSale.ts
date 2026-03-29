@@ -101,36 +101,62 @@ export const useCreateSale = () => {
 
       // Track the car as sold
       try {
-        // Insert basic sold car record (only use columns that exist in Sold_Cars table)
-        const supabaseResponse = await supabase
-          .from("Sold_Cars")
-          .insert({
-            car_id: formData.carId,
-            sold_at: new Date().toISOString(),
-          })
-          .select();
+        // First, get the car data from Cars table
+        const { data: carData, error: fetchError } = await supabase
+          .from("Cars")
+          .select("*")
+          .eq("id", formData.carId)
+          .single();
 
-        if (supabaseResponse.error) {
-          console.error(
-            "Warning: Could not track car as sold:",
-            supabaseResponse.error,
-          );
-        } else {
-          console.log("Car successfully tracked as sold");
+        if (fetchError) {
+          console.error("Warning: Could not fetch car data:", fetchError);
+        } else if (carData) {
+          // Insert complete car data into Sold_Cars table
+          const supabaseResponse = await supabase
+            .from("Sold_Cars")
+            .insert({
+              id: carData.id,
+              created_at: carData.created_at,
+              name: carData.name,
+              car_type: carData.car_type,
+              brand: carData.brand,
+              price: carData.price,
+              fuel_type: carData.fuel_type,
+              description: carData.description,
+              features_amenities: carData.features_amenities,
+              engine: carData.engine,
+              horse_power: carData.horse_power,
+              transmission: carData.transmission,
+              color: carData.color,
+              miles: carData.miles,
+              year_of_manufacture: carData.year_of_manufacture,
+              image_urls: carData.image_urls,
+              sold_at: new Date().toISOString(),
+            })
+            .select();
 
-          // Now delete the car from Cars table
-          const { error: deleteError } = await supabase
-            .from("Cars")
-            .delete()
-            .eq("id", formData.carId);
-
-          if (deleteError) {
+          if (supabaseResponse.error) {
             console.error(
-              "❌ Failed to delete car from Cars table:",
-              deleteError,
+              "Warning: Could not track car as sold:",
+              supabaseResponse.error,
             );
           } else {
-            console.log("✅ Car successfully deleted from Cars table");
+            console.log("Car successfully tracked as sold");
+
+            // Now delete the car from Cars table
+            const { error: deleteError } = await supabase
+              .from("Cars")
+              .delete()
+              .eq("id", formData.carId);
+
+            if (deleteError) {
+              console.error(
+                "❌ Failed to delete car from Cars table:",
+                deleteError,
+              );
+            } else {
+              console.log("✅ Car successfully deleted from Cars table");
+            }
           }
         }
       } catch (trackError) {

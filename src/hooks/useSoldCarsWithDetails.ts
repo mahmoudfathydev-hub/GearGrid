@@ -7,7 +7,7 @@ import { SoldCars } from "../store/Sold_Cars/types";
 import { Cars } from "../store/Cars/types";
 import { Car } from "../app/dashboard/cars/types/cars";
 
-// Mapper to convert Cars to dashboard Car type
+
 const mapToDashboardCar = (reduxCar: Cars): Car => ({
   id: reduxCar.id.toString(),
   name: reduxCar.name,
@@ -28,44 +28,57 @@ export const useSoldCarsWithDetails = () => {
   const soldCars = useSelector((state: RootState) => state.soldCars);
   const cars = useSelector((state: RootState) => state.cars);
 
-  // Fetch sold cars and all cars on mount
+  
   React.useEffect(() => {
     dispatch(fetchSoldCars());
     dispatch(fetchCars());
   }, [dispatch]);
 
-  // Combine sold car records with car details
+  
   const soldCarsWithDetails = React.useMemo(() => {
-    const carsMap = new Map(
-      Object.values(cars.entities).map((car) => [car.id.toString(), car]),
-    );
-
     return Object.values(soldCars.entities)
       .filter((soldCar): soldCar is SoldCars => soldCar !== undefined)
       .map((soldCar) => {
-        const carDetails = carsMap.get(soldCar.car_id);
-
-        if (carDetails) {
-          // If we have car details, use them
+        
+        if (soldCar.name && soldCar.brand) {
+          
           return {
             ...soldCar,
-            car: mapToDashboardCar(carDetails),
+            car: {
+              id: soldCar.car_id || soldCar.id?.toString(),
+              name: soldCar.name,
+              brand: soldCar.brand,
+              price: soldCar.price || 0,
+              image: soldCar.image_urls,
+              images: Array.isArray(soldCar.image_urls)
+                ? soldCar.image_urls
+                : typeof soldCar.image_urls === "string"
+                  ? [soldCar.image_urls]
+                  : [],
+              description: soldCar.description,
+              year: soldCar.year_of_manufacture,
+              mileage: soldCar.miles,
+              fuel_type: soldCar.fuel_type,
+              transmission: soldCar.transmission,
+              color: soldCar.color,
+              created_at: soldCar.created_at,
+            } as Car,
           };
         } else {
-          // If car details are not found (deleted from Cars table), create a fallback
+          
           return {
             ...soldCar,
             car: {
               id: soldCar.car_id,
-              name: "Sold Car",
-              brand: "Unknown",
-              price: 0,
+              name: soldCar.name || "Sold Car",
+              brand: soldCar.brand || "Unknown",
+              price: soldCar.price || 0,
               created_at: soldCar.created_at,
             } as Car,
           };
         }
       });
-  }, [soldCars.entities, cars.entities]);
+  }, [soldCars.entities]);
 
   return {
     soldCars: soldCarsWithDetails,

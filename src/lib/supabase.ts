@@ -479,10 +479,25 @@ export async function sellCar(carId: number) {
     if (fetchError) throw fetchError;
     if (!carData) throw new Error("Car not found");
 
-    // Add the car to Sold_Cars table (basic approach)
-    console.log("💾 Inserting car into Sold_Cars table...");
+    // Add the car to Sold_Cars table with all information
+    console.log("💾 Inserting complete car data into Sold_Cars table...");
     const { error: insertError } = await supabase.from("Sold_Cars").insert({
-      car_id: carId,
+      id: carData.id,
+      created_at: carData.created_at,
+      name: carData.name,
+      car_type: carData.car_type,
+      brand: carData.brand,
+      price: carData.price,
+      fuel_type: carData.fuel_type,
+      description: carData.description,
+      features_amenities: carData.features_amenities,
+      engine: carData.engine,
+      horse_power: carData.horse_power,
+      transmission: carData.transmission,
+      color: carData.color,
+      miles: carData.miles,
+      year_of_manufacture: carData.year_of_manufacture,
+      image_urls: carData.image_urls,
       sold_at: new Date().toISOString(),
     });
 
