@@ -112,8 +112,25 @@ export default function ServicesGrid() {
   const loading = useAppSelector(selectServicesLoading);
   const error = useAppSelector(selectServicesError);
 
+  // Move useMemo to the top - BEFORE any early returns
+  const allServices = React.useMemo(() => {
+    return dynamicServices.map((service) => ({
+      id: service.id,
+      title: service.name || "Service",
+      description: service.desc || "No description available",
+      benefits: [
+        service.icon || "🔧",
+        "Professional service",
+        "Quick response",
+      ],
+      cta: "Learn More",
+    }));
+  }, [dynamicServices]);
+
   console.log("ServicesGrid - dynamicServices:", dynamicServices);
   console.log("ServicesGrid - dynamicServices length:", dynamicServices.length);
+  console.log("ServicesGrid - allServices:", allServices);
+  console.log("ServicesGrid - allServices length:", allServices.length);
 
   // Loading state
   if (loading) {
@@ -188,24 +205,6 @@ export default function ServicesGrid() {
       </section>
     );
   }
-
-  // Only show dynamic services from database
-  const allServices = React.useMemo(() => {
-    return dynamicServices.map((service) => ({
-      id: service.id,
-      title: service.name || "Service",
-      description: service.desc || "No description available",
-      benefits: [
-        service.icon || "🔧",
-        "Professional service",
-        "Quick response",
-      ],
-      cta: "Learn More",
-    }));
-  }, [dynamicServices]);
-
-  console.log("ServicesGrid - allServices:", allServices);
-  console.log("ServicesGrid - allServices length:", allServices.length);
 
   if (allServices.length === 0) {
     return (

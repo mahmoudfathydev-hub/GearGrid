@@ -146,8 +146,7 @@ const Navbar = () => {
     { id: 2, name: "Services", href: "/Services" },
     { id: 3, name: "Cars", href: "/Cars" },
     { id: 4, name: "Compare", href: "/compare" },
-    { id: 5, name: "Book Test Drive", href: "/bookTestDrive" },
-    { id: 6, name: "Dashboard", href: "/dashboard" },
+    { id: 5, name: "Book Test Drive", href: "/bookTestDrive" }
   ];
 
   return (

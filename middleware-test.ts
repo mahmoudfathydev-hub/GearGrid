@@ -2,18 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  console.log("🔍 MIDDLEWARE TRIGGERED FOR:", request.nextUrl.pathname);
-
+  console.log('🔍 MIDDLEWARE TRIGGERED FOR:', request.nextUrl.pathname);
+  
   // Simple test: Block all dashboard access regardless of auth
-  if (request.nextUrl.pathname.startsWith("/dashboard")) {
-    console.log("🚫 BLOCKING DASHBOARD ACCESS - REDIRECTING TO HOME");
+  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    console.log('🚫 BLOCKING DASHBOARD ACCESS');
     const url = request.nextUrl.clone();
-    url.pathname = "/";
-    url.searchParams.set("error", "dashboard_blocked");
+    url.pathname = '/';
+    url.searchParams.set('error', 'dashboard_blocked');
     return NextResponse.redirect(url);
   }
-
-  console.log("✅ ALLOWING ACCESS TO:", request.nextUrl.pathname);
+  
   return NextResponse.next();
 }
 
