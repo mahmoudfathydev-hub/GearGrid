@@ -1,5 +1,5 @@
 const nextJest = require('next/jest')({
-  dir: ['src', 'tests'],
+  dir: './',
   testMatchPatterns: [
     '**/__tests__/**/*',
     '**/?(*)\\.(spec|test).[jt]s?(x)',
@@ -8,7 +8,7 @@ const nextJest = require('next/jest')({
     '/node_modules/',
     '/.next/',
   ],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'tsx'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   moduleNameMapping: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
