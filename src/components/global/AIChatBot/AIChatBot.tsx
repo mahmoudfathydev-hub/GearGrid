@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Send, Bot, User, Sparkles } from "lucide-react";
+import { useDraggablePosition } from "@/hooks/useDraggablePosition";
 import { usePageDetection } from "@/hooks/usePageDetection";
 
 interface Message {
@@ -31,6 +32,13 @@ export function AIChatBot({
   cars,
 }: AIChatBotProps) {
   const { isComparePage } = usePageDetection();
+  const {
+    isDragging,
+    elementRef,
+    getPositionClasses,
+    handleMouseDown,
+    handleTouchStart,
+  } = useDraggablePosition();
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -199,7 +207,13 @@ Provide a detailed, helpful response based on the car data above. If no specific
   return (
     <>
       {isOpen && (
-        <div>
+        <div
+          ref={elementRef}
+          className={getPositionClasses()}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+          style={{ cursor: isDragging ? "grabbing" : "grab" }}
+        >
           <Card className="w-96 h-150 flex flex-col shadow-lg border-2 border-blue-200 z-40">
             <CardHeader className="bg-linear-to-r from-blue-600 to-purple-600 text-white">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -263,6 +277,7 @@ Provide a detailed, helpful response based on the car data above. If no specific
                 </div>
               )}
 
+              {/* Suggested Questions */}
               {messages.length === 1 && (
                 <div className="p-4 border-t">
                   <p className="text-sm text-gray-600 mb-2">
@@ -284,6 +299,7 @@ Provide a detailed, helpful response based on the car data above. If no specific
                 </div>
               )}
 
+              {/* Input Area */}
               <div className="p-4 border-t">
                 <div className="flex gap-2">
                   <Input
