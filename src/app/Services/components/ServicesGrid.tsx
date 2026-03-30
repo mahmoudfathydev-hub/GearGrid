@@ -2,7 +2,11 @@
 
 import React from "react";
 import { useAppSelector } from "@/hooks";
-import { selectServices } from "@/store/services/servicesSelectors";
+import {
+  selectServices,
+  selectServicesLoading,
+  selectServicesError,
+} from "@/store/services/servicesSelectors";
 
 interface Service {
   id: number;
@@ -105,17 +109,97 @@ const staticServices: Service[] = [
 
 export default function ServicesGrid() {
   const dynamicServices = useAppSelector(selectServices);
+  const loading = useAppSelector(selectServicesLoading);
+  const error = useAppSelector(selectServicesError);
 
   console.log("ServicesGrid - dynamicServices:", dynamicServices);
   console.log("ServicesGrid - dynamicServices length:", dynamicServices.length);
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, index) => (
+              <div
+                key={index}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
+              >
+                <div className="animate-pulse">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4"></div>
+                  <div className="space-y-2 mb-6">
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                  </div>
+                  <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 006. 0zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l1.293 1.293a1 1 0 001.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707a1 1 0 00-1.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-400">
+                    Error loading services
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                    <p>{error}</p>
+                  </div>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="mt-3 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 underline"
+                  >
+                    Try again
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   // Only show dynamic services from database
   const allServices = React.useMemo(() => {
     return dynamicServices.map((service) => ({
       id: service.id,
-      title: service.name,
-      description: service.desc,
-      benefits: [service.icon, "Professional service", "Quick response"],
+      title: service.name || "Service",
+      description: service.desc || "No description available",
+      benefits: [
+        service.icon || "🔧",
+        "Professional service",
+        "Quick response",
+      ],
       cta: "Learn More",
     }));
   }, [dynamicServices]);

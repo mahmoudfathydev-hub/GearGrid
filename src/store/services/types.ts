@@ -1,9 +1,9 @@
 export interface Service {
   id: number;
-  created_at: string;
+  created_at?: string;
   name: string;
-  icon: string;
-  desc: string;
+  icon?: string;
+  desc?: string;
 }
 
 export interface ServiceFormData {

@@ -48,9 +48,9 @@ export default function ServicesPage() {
 
   const handleEdit = (service: Service) => {
     dispatch(setEditingId(service.id));
-    dispatch(setName(service.name));
-    dispatch(setIcon(service.icon));
-    dispatch(setDesc(service.desc));
+    dispatch(setName(service.name || ""));
+    dispatch(setIcon(service.icon || ""));
+    dispatch(setDesc(service.desc || ""));
   };
 
   const handleDelete = (id: number) => {

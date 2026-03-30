@@ -9,7 +9,7 @@ export const fetchServices = createAsyncThunk<
 >("services/fetchServices", async (_, { rejectWithValue }) => {
   try {
     const { data, error } = await supabase
-      .from("Servises")
+      .from("Services")
       .select("*")
       .order("created_at", { ascending: false });
 
@@ -30,7 +30,7 @@ export const createService = createAsyncThunk<
 >("services/createService", async (serviceData, { rejectWithValue }) => {
   try {
     const { data, error } = await supabase
-      .from("Servises")
+      .from("Services")
       .insert([serviceData])
       .select()
       .single();
@@ -52,7 +52,7 @@ export const updateService = createAsyncThunk<
 >("services/updateService", async ({ id, data }, { rejectWithValue }) => {
   try {
     const { data: updatedData, error } = await supabase
-      .from("Servises")
+      .from("Services")
       .update(data)
       .eq("id", id)
       .select()
@@ -74,7 +74,7 @@ export const deleteService = createAsyncThunk<
   { rejectValue: string }
 >("services/deleteService", async (id, { rejectWithValue }) => {
   try {
-    const { error } = await supabase.from("Servises").delete().eq("id", id);
+    const { error } = await supabase.from("Services").delete().eq("id", id);
 
     if (error) {
       return rejectWithValue(error.message);

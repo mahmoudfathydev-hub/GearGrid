@@ -1,12 +1,20 @@
 "use client";
 
 import React from "react";
+import { useAppDispatch } from "@/hooks";
+import { fetchServices } from "@/store/services/servicesSelectors";
 
 interface ErrorMessageProps {
   message: string;
 }
 
 export const ErrorMessage: React.FC<ErrorMessageProps> = ({ message }) => {
+  const dispatch = useAppDispatch();
+
+  const handleRetry = () => {
+    dispatch(fetchServices());
+  };
+
   return (
     <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
       <div className="flex">
@@ -30,6 +38,14 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({ message }) => {
           </h3>
           <div className="mt-2 text-sm text-red-700 dark:text-red-300">
             <p>{message}</p>
+          </div>
+          <div className="mt-3">
+            <button
+              onClick={handleRetry}
+              className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 underline"
+            >
+              Try again
+            </button>
           </div>
         </div>
       </div>
