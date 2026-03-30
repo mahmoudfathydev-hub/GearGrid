@@ -33,7 +33,7 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
+
   const theme = useAppSelector((state) => state.theme.theme);
   const dispatch = useAppDispatch();
   const { cartCount, favoriteCount } = useCartAndFavorites();
@@ -70,17 +70,21 @@ const Navbar = () => {
           .from("User")
           .delete()
           .eq("email", userEmail);
-        
+
         if (dbError) throw dbError;
       }
 
       const { error: authError } = await supabase.auth.signOut();
       if (authError) throw authError;
 
-      toast.success("Account deleted and signed out successfully.", { id: loadingToast });
+      toast.success("Account deleted and signed out successfully.", {
+        id: loadingToast,
+      });
       router.push("/signup");
     } catch (error: any) {
-      toast.error(error.message || "Something went wrong during deletion.", { id: loadingToast });
+      toast.error(error.message || "Something went wrong during deletion.", {
+        id: loadingToast,
+      });
       console.error("Sign out error:", error);
     }
   };
@@ -108,17 +112,21 @@ const Navbar = () => {
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Check initial session
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setIsLoggedIn(!!session);
       setUserEmail(session?.user?.email || null);
     };
     checkSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setIsLoggedIn(!!session);
       setUserEmail(session?.user?.email || null);
     });
@@ -138,6 +146,7 @@ const Navbar = () => {
     { id: 2, name: "Services", href: "/Services" },
     { id: 3, name: "Cars", href: "/Cars" },
     { id: 4, name: "Compare", href: "/compare" },
+    { id: 5, name: "Book Test Drive", href: "/bookTestDrive" },
   ];
 
   return (
@@ -152,7 +161,7 @@ const Navbar = () => {
             <SearchInput onSearch={handleSearch} />
           </div>
 
-          <div className="hidden md:block">
+          <div className="hidden md:block px-4">
             <NavigationLinks links={links} />
           </div>
 
@@ -166,14 +175,9 @@ const Navbar = () => {
             <CartIcon itemCount={cartCount} onClick={handleCartClick} />
 
             <div className="hidden sm:flex items-center space-x-2">
-              <HeartIcon
-                itemCount={favoriteCount}
-                onClick={handleHeartClick}
-              />
+              <HeartIcon itemCount={favoriteCount} onClick={handleHeartClick} />
 
-              <SignInButton
-                onClick={handleAuthAction}
-              />
+              <SignInButton onClick={handleAuthAction} />
             </div>
 
             <MobileMenuButton
@@ -222,12 +226,18 @@ const Navbar = () => {
             <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
               <TriangleAlertIcon className="w-8 h-8 text-red-500" />
             </div>
-            
+
             <div className="space-y-2">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-white text-center">Critical Action</DialogTitle>
+                <DialogTitle className="text-2xl font-bold text-white text-center">
+                  Critical Action
+                </DialogTitle>
                 <DialogDescription className="text-red-400 font-medium text-center text-base">
-                  Are you sure you want to sign out? This will <span className="underline decoration-2 font-bold">permanently delete</span> your account data from GearGrid.
+                  Are you sure you want to sign out? This will{" "}
+                  <span className="underline decoration-2 font-bold">
+                    permanently delete
+                  </span>{" "}
+                  your account data from GearGrid.
                 </DialogDescription>
               </DialogHeader>
             </div>
