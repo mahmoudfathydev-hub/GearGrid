@@ -15,6 +15,7 @@ import {
   Trash2,
   User,
   Calendar,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -72,6 +73,12 @@ const sidebarItems: SidebarItem[] = [
     label: "Add A New Car",
     href: "/dashboard/add-car",
     icon: <PlusCircle className="w-5 h-5" />,
+  },
+  {
+    id: "services",
+    label: "Services",
+    href: "/dashboard/services",
+    icon: <Settings className="w-5 h-5" />,
   },
   {
     id: "book-test-drives",

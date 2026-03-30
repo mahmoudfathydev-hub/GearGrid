@@ -1,5 +1,8 @@
-'use client';
+"use client";
 
+import React from "react";
+import { useAppSelector } from "@/hooks";
+import { selectServices } from "@/store/services/servicesSelectors";
 
 interface Service {
   id: number;
@@ -9,17 +12,18 @@ interface Service {
   cta: string;
 }
 
-const services: Service[] = [
+const staticServices: Service[] = [
   {
     id: 1,
     title: "Car Sales",
-    description: "New and used vehicles with verified listings and competitive pricing",
+    description:
+      "New and used vehicles with verified listings and competitive pricing",
     benefits: [
       "Verified vehicle history",
       "Transparent pricing",
-      "Virtual tours available"
+      "Virtual tours available",
     ],
-    cta: "Browse Cars"
+    cta: "Browse Cars",
   },
   {
     id: 2,
@@ -28,9 +32,9 @@ const services: Service[] = [
     benefits: [
       "Flexible duration options",
       "Insurance included",
-      "Delivery available"
+      "Delivery available",
     ],
-    cta: "Rent Now"
+    cta: "Rent Now",
   },
   {
     id: 3,
@@ -39,9 +43,9 @@ const services: Service[] = [
     benefits: [
       "Authentic parts only",
       "Next-day delivery",
-      "Price match guarantee"
+      "Price match guarantee",
     ],
-    cta: "Shop Parts"
+    cta: "Shop Parts",
   },
   {
     id: 4,
@@ -50,9 +54,9 @@ const services: Service[] = [
     benefits: [
       "PPF protection included",
       "Custom designs available",
-      "2-year warranty"
+      "2-year warranty",
     ],
-    cta: "Get Quote"
+    cta: "Get Quote",
   },
   {
     id: 5,
@@ -61,9 +65,9 @@ const services: Service[] = [
     benefits: [
       "24/7 availability",
       "30-minute response time",
-      "Flatbed towing"
+      "Flatbed towing",
     ],
-    cta: "Request Help"
+    cta: "Request Help",
   },
   {
     id: 6,
@@ -72,51 +76,93 @@ const services: Service[] = [
     benefits: [
       "Certified technicians",
       "Digital reports",
-      "Scheduled reminders"
+      "Scheduled reminders",
     ],
-    cta: "Book Service"
+    cta: "Book Service",
   },
   {
     id: 7,
     title: "Battery Replacement",
     description: "On-site battery replacement service at your location",
-    benefits: [
-      "At your location",
-      "30-minute service",
-      "Warranty included"
-    ],
-    cta: "Replace Battery"
+    benefits: ["At your location", "30-minute service", "Warranty included"],
+    cta: "Replace Battery",
   },
   {
     id: 8,
     title: "Car Insurance",
     description: "Comprehensive coverage plans with competitive premiums",
-    benefits: [
-      "Instant approval",
-      "Multiple providers",
-      "Claims assistance"
-    ],
-    cta: "Get Insured"
+    benefits: ["Instant approval", "Multiple providers", "Claims assistance"],
+    cta: "Get Insured",
   },
   {
     id: 9,
     title: "Car Financing",
     description: "Flexible installment plans with quick approval process",
-    benefits: [
-      "0% down payment",
-      "Instant approval",
-      "Flexible terms"
-    ],
-    cta: "Apply Now"
-  }
+    benefits: ["0% down payment", "Instant approval", "Flexible terms"],
+    cta: "Apply Now",
+  },
 ];
 
 export default function ServicesGrid() {
+  const dynamicServices = useAppSelector(selectServices);
+
+  console.log("ServicesGrid - dynamicServices:", dynamicServices);
+  console.log("ServicesGrid - dynamicServices length:", dynamicServices.length);
+
+  // Only show dynamic services from database
+  const allServices = React.useMemo(() => {
+    const mapped = dynamicServices.map((service) => ({
+      id: service.id,
+      title: service.name,
+      description: service.desc,
+      benefits: [service.icon, "Professional service", "Quick response"],
+      cta: "Learn More",
+    }));
+
+    console.log("ServicesGrid - mapped services:", mapped);
+    return mapped;
+  }, [dynamicServices]);
+
+  console.log("ServicesGrid - allServices:", allServices);
+  console.log("ServicesGrid - allServices length:", allServices.length);
+
+  if (allServices.length === 0) {
+    return (
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="text-gray-500 dark:text-gray-400">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0 0h6m-6 0h6"
+                />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                No services available
+              </h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Add services through the dashboard to see them here.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service) => (
+          {allServices.map((service) => (
             <div
               key={service.id}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 group"
