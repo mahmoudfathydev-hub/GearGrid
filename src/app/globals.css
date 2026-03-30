@@ -178,3 +178,66 @@ button {
     @apply font-sans;
   }
 }
+
+/* Force light mode for dashboard routes */
+.light-mode-dashboard,
+.light-mode-dashboard * {
+  color-scheme: light !important;
+}
+
+/* Override dark mode classes in dashboard */
+.light-mode-dashboard .dark,
+.light-mode-dashboard [class*="dark:"] {
+  color-scheme: light !important;
+}
+
+/* Force light mode colors for dashboard */
+.light-mode-dashboard [class*="dark:bg-gray-"] {
+  background-color: rgb(243 244 246) !important;
+}
+
+.light-mode-dashboard [class*="dark:text-gray-"] {
+  color: rgb(75 85 99) !important;
+}
+
+.light-mode-dashboard [class*="dark:border-gray-"] {
+  border-color: rgb(229 231 235) !important;
+}
+
+.light-mode-dashboard [class*="dark:bg-white"] {
+  background-color: white !important;
+}
+
+.light-mode-dashboard [class*="dark:text-white"] {
+  color: rgb(17 24 39) !important;
+}
+
+/* Specific dashboard overrides */
+.light-mode-dashboard {
+  --background: oklch(1 0 0) !important;
+  --foreground: oklch(0.145 0 0) !important;
+  --card: oklch(1 0 0) !important;
+  --card-foreground: oklch(0.145 0 0) !important;
+  --popover: oklch(1 0 0) !important;
+  --popover-foreground: oklch(0.145 0 0) !important;
+  --primary: oklch(0.205 0 0) !important;
+  --primary-foreground: oklch(0.985 0 0) !important;
+  --secondary: oklch(0.97 0 0) !important;
+  --secondary-foreground: oklch(0.205 0 0) !important;
+  --muted: oklch(0.97 0 0) !important;
+  --muted-foreground: oklch(0.556 0 0) !important;
+  --accent: oklch(0.97 0 0) !important;
+  --accent-foreground: oklch(0.205 0 0) !important;
+  --destructive: oklch(0.577 0.245 27.325) !important;
+  --border: oklch(0.922 0 0) !important;
+  --input: oklch(0.922 0 0) !important;
+  --ring: oklch(0.708 0 0) !important;
+  --sidebar: oklch(0.985 0 0) !important;
+  --sidebar-foreground: oklch(0.145 0 0) !important;
+  --sidebar-primary: oklch(0.205 0 0) !important;
+  --sidebar-primary-foreground: oklch(0.985 0 0) !important;
+  --sidebar-accent: oklch(0.97 0 0) !important;
+  --sidebar-accent-foreground: oklch(0.205 0 0) !important;
+  --sidebar-border: oklch(0.922 0 0) !important;
+  --sidebar-ring: oklch(0.708 0 0) !important;
+}
