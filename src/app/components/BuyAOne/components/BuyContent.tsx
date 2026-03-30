@@ -26,7 +26,7 @@ export const BuyContent = forwardRef<HTMLDivElement, { children?: React.ReactNod
 
         <div className="pt-6">
           <Link
-            href="/cars"
+            href="/Cars"
             className="inline-flex items-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 group"
           >
             Explore Inventory

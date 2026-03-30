@@ -17,11 +17,7 @@ export default function Services() {
   const dispatch = useAppDispatch();
   const services = useAppSelector(selectServices);
 
-  console.log("Services page - services from Redux:", services);
-  console.log("Services page - services length:", services.length);
-
   useEffect(() => {
-    console.log("Services page - About to fetchServices");
     dispatch(fetchServices());
   }, [dispatch]);
 

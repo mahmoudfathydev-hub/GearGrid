@@ -51,24 +51,15 @@ const servicesSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchServices.pending, (state) => {
-        console.log("servicesSlice - fetchServices.pending");
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchServices.fulfilled, (state, action) => {
-        console.log(
-          "servicesSlice - fetchServices.fulfilled with payload:",
-          action.payload,
-        );
         state.loading = false;
         state.services = action.payload;
         state.error = null;
       })
       .addCase(fetchServices.rejected, (state, action) => {
-        console.log(
-          "servicesSlice - fetchServices.rejected with payload:",
-          action.payload,
-        );
         state.loading = false;
         state.error = action.payload || "Failed to fetch services";
         state.services = [];

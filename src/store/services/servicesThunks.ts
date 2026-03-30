@@ -8,24 +8,17 @@ export const fetchServices = createAsyncThunk<
   { rejectValue: string }
 >("services/fetchServices", async (_, { rejectWithValue }) => {
   try {
-    console.log("fetchServices thunk - About to query Supabase");
     const { data, error } = await supabase
       .from("Servises")
       .select("*")
       .order("created_at", { ascending: false });
 
-    console.log("fetchServices thunk - data:", data);
-    console.log("fetchServices thunk - error:", error);
-
     if (error) {
-      console.log("fetchServices thunk - error found:", error.message);
       return rejectWithValue(error.message);
     }
 
-    console.log("fetchServices thunk - returning data:", data as Service[]);
     return data as Service[];
   } catch (error: any) {
-    console.log("fetchServices thunk - catch error:", error.message);
     return rejectWithValue(error.message || "Failed to fetch services");
   }
 });

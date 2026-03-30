@@ -34,22 +34,9 @@ export default function ServicesPage() {
   const formData = useAppSelector(selectServicesForm);
   const editingId = useAppSelector(selectEditingId);
 
-  console.log("Dashboard ServicesPage - services:", services);
-  console.log("Dashboard ServicesPage - loading:", loading);
-  console.log("Dashboard ServicesPage - error:", error);
-  console.log("Dashboard ServicesPage - formData:", formData);
-  console.log("Dashboard ServicesPage - editingId:", editingId);
-
   useEffect(() => {
-    console.log("Dashboard ServicesPage - About to fetchServices");
     dispatch(fetchServices());
   }, [dispatch]);
-
-  useEffect(() => {
-    console.log("Dashboard ServicesPage - services updated:", services);
-    console.log("Dashboard ServicesPage - loading updated:", loading);
-    console.log("Dashboard ServicesPage - error updated:", error);
-  }, [services, loading, error]);
 
   const handleSubmit = () => {
     if (editingId) {

@@ -111,16 +111,13 @@ export default function ServicesGrid() {
 
   // Only show dynamic services from database
   const allServices = React.useMemo(() => {
-    const mapped = dynamicServices.map((service) => ({
+    return dynamicServices.map((service) => ({
       id: service.id,
       title: service.name,
       description: service.desc,
       benefits: [service.icon, "Professional service", "Quick response"],
       cta: "Learn More",
     }));
-
-    console.log("ServicesGrid - mapped services:", mapped);
-    return mapped;
   }, [dynamicServices]);
 
   console.log("ServicesGrid - allServices:", allServices);
