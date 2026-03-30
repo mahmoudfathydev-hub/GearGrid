@@ -11,30 +11,48 @@ export const submitTestDriveBooking = createAsyncThunk<
     date: string;
   },
   { rejectValue: string }
->(
-  "bookTestDrive/submitBooking",
-  async (bookingData, { rejectWithValue }) => {
-    try {
-      const { data, error } = await supabase
-        .from("Book_Test_Drive")
-        .insert([
-          {
-            name: bookingData.name,
-            number: bookingData.number,
-            transmissions: bookingData.transmissions,
-            date: bookingData.date,
-          },
-        ])
-        .select()
-        .single();
+>("bookTestDrive/submitBooking", async (bookingData, { rejectWithValue }) => {
+  try {
+    const { data, error } = await supabase
+      .from("Book_Test_Drive")
+      .insert([
+        {
+          name: bookingData.name,
+          number: bookingData.number,
+          transmissions: bookingData.transmissions,
+          date: bookingData.date,
+        },
+      ])
+      .select()
+      .single();
 
-      if (error) {
-        return rejectWithValue(error.message);
-      }
-
-      return data as BookTestDrive;
-    } catch (error: any) {
-      return rejectWithValue(error.message || "Failed to submit booking");
+    if (error) {
+      return rejectWithValue(error.message);
     }
+
+    return data as BookTestDrive;
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Failed to submit booking");
   }
-);
+});
+
+export const fetchBookTestDrives = createAsyncThunk<
+  BookTestDrive[],
+  void,
+  { rejectValue: string }
+>("bookTestDrive/fetchBookTestDrives", async (_, { rejectWithValue }) => {
+  try {
+    const { data, error } = await supabase
+      .from("Book_Test_Drive")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return rejectWithValue(error.message);
+    }
+
+    return data as BookTestDrive[];
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Failed to fetch bookings");
+  }
+});

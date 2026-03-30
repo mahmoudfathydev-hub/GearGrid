@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BookTestDriveState } from "./types";
-import { submitTestDriveBooking } from "./bookTestDriveThunks";
+import {
+  submitTestDriveBooking,
+  fetchBookTestDrives,
+} from "./bookTestDriveThunks";
 
 const initialState: BookTestDriveState = {
   loading: false,
@@ -12,6 +15,7 @@ const initialState: BookTestDriveState = {
     transmissions: "",
     date: "",
   },
+  data: [],
 };
 
 const bookTestDriveSlice = createSlice({
@@ -62,16 +66,25 @@ const bookTestDriveSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Failed to submit booking";
         state.success = false;
+      })
+      .addCase(fetchBookTestDrives.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBookTestDrives.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchBookTestDrives.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch bookings";
+        state.data = [];
       });
   },
 });
 
-export const {
-  setName,
-  setNumber,
-  setTransmission,
-  setDate,
-  resetForm,
-} = bookTestDriveSlice.actions;
+export const { setName, setNumber, setTransmission, setDate, resetForm } =
+  bookTestDriveSlice.actions;
 
 export default bookTestDriveSlice.reducer;

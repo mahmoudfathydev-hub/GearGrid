@@ -8,7 +8,10 @@ import {
   setDate,
   resetForm,
 } from "./bookTestDriveSlice";
-import { submitTestDriveBooking } from "./bookTestDriveThunks";
+import {
+  submitTestDriveBooking,
+  fetchBookTestDrives,
+} from "./bookTestDriveThunks";
 
 const selectBookTestDriveState = (state: RootState) => state.bookTestDrive;
 
@@ -32,6 +35,22 @@ export const selectBookingForm = createSelector(
   (bookTestDrive) => bookTestDrive.formData,
 );
 
+export const selectBookTestDrives = createSelector(
+  [selectBookTestDriveState],
+  (bookTestDrive) => bookTestDrive.data,
+);
+
+export const selectBookTestDrivesLoading = createSelector(
+  [selectBookTestDriveState],
+  (bookTestDrive) => bookTestDrive.loading,
+);
+
+export const selectBookTestDrivesError = createSelector(
+  [selectBookTestDriveState],
+  (bookTestDrive) => bookTestDrive.error,
+);
+
+// Re-export actions and thunks for convenience
 export {
   setName,
   setNumber,
@@ -39,4 +58,5 @@ export {
   setDate,
   resetForm,
   submitTestDriveBooking,
+  fetchBookTestDrives,
 };

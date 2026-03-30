@@ -19,4 +19,5 @@ export interface BookTestDriveState {
   success: boolean;
   error: string | null;
   formData: BookTestDriveFormData;
+  data: BookTestDrive[];
 }
