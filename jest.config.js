@@ -14,9 +14,6 @@ const nextJest = require('next/jest')({
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
-  transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
-  },
 });
 
 module.exports = nextJest;
