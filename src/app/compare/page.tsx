@@ -6,10 +6,7 @@ import { fetchCars } from "@/store/Cars/CarsSlice";
 import { useDispatch } from "react-redux";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  CarSelectionSection,
-  ComparePageHeader,
-} from "./components";
+import { CarSelectionSection, ComparePageHeader } from "./components";
 import { Cars } from "@/store/Cars/types";
 import { ThunkDispatch } from "@reduxjs/toolkit";
 import { AnyAction } from "redux";
@@ -36,8 +33,16 @@ interface ComparisonData {
 interface ComparisonResult {
   cars: Cars[];
   comparison: ComparisonData[];
-  bestPerformers: Cars[];
-  worstPerformers: Cars[];
+  bestPerformers: {
+    performance: string;
+    fuelEfficiency: string;
+    price: string;
+  };
+  worstPerformers: {
+    performance: string;
+    fuelEfficiency: string;
+    price: string;
+  };
 }
 
 export default function ComparePage() {
@@ -53,7 +58,8 @@ export default function ComparePage() {
     answerFollowUpQuestion,
   } = useCarComparison();
 
-  const [comparisonResult, setComparisonResult] = useState<ComparisonResult | null>(null);
+  const [comparisonResult, setComparisonResult] =
+    useState<ComparisonResult | null>(null);
   const [answer, setAnswer] = useState("");
   const [input, setInput] = useState("");
 
@@ -71,15 +77,7 @@ export default function ComparePage() {
   const handleComparison = () => {
     const result = generateComparison();
     if (result) {
-      setComparisonResult({
-        ...result,
-        bestPerformers: Array.isArray(result.bestPerformers)
-          ? (result.bestPerformers as Cars[])
-          : [],
-        worstPerformers: Array.isArray(result.worstPerformers)
-          ? (result.worstPerformers as Cars[])
-          : [],
-      });
+      setComparisonResult(result);
     }
   };
 
@@ -103,11 +101,16 @@ export default function ComparePage() {
             <div className="flex gap-4">
               <Input
                 value={input}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setInput(e.target.value)
+                }
                 placeholder="Ask the AI about your comparison..."
                 className="flex-1"
               />
-              <Button onClick={handleAskQuestion} className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                onClick={handleAskQuestion}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 Ask
               </Button>
             </div>
