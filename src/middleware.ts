@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           response = NextResponse.next({
             request: {
@@ -26,11 +26,11 @@ export async function middleware(request: NextRequest) {
             },
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   const {
@@ -39,31 +39,48 @@ export async function middleware(request: NextRequest) {
 
   const url = request.nextUrl.clone();
 
-  if (user) {
-    const role = user.user_metadata?.role;
-
-    // 1. If admin tries to access Home page or Signup page, redirect to Dashboard
-    if (role === "admin") {
-      if (url.pathname === "/" || url.pathname === "/signup") {
-        url.pathname = "/dashboard";
-        url.searchParams.set("message", "admin_redirect");
-        return NextResponse.redirect(url);
-      }
+  // 1. Redirect unauthenticated users to login page (except for login/signup pages)
+  if (!user) {
+    if (url.pathname !== "/login" && url.pathname !== "/signup") {
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
     }
+    return response;
+  }
 
-    // 2. If regular user tries to access Signup page, redirect to Home
-    if (role === "user") {
-      if (url.pathname === "/signup") {
-        url.pathname = "/";
-        return NextResponse.redirect(url);
-      }
+  // User is authenticated - get role from metadata or database
+  let role = user.user_metadata?.role;
+
+  // If role not in metadata, check database
+  if (!role) {
+    const { data: profile } = await supabase
+      .from("User")
+      .select("role")
+      .eq("email", user.email!)
+      .single();
+    role = profile?.role;
+  }
+
+  // 2. Redirect authenticated users based on role
+  if (role === "admin") {
+    // Admin users: redirect to dashboard, block access to home page
+    if (
+      url.pathname === "/" ||
+      url.pathname === "/login" ||
+      url.pathname === "/signup"
+    ) {
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
     }
-    
-    // 3. Security: Prevent regular users from accessing Dashboard
-    if (role !== "admin" && url.pathname.startsWith("/dashboard")) {
-        url.pathname = "/";
-        url.searchParams.set("error", "unauthorized");
-        return NextResponse.redirect(url);
+  } else if (role === "user") {
+    // Regular users: redirect to home page, block access to dashboard
+    if (
+      url.pathname.startsWith("/dashboard") ||
+      url.pathname === "/login" ||
+      url.pathname === "/signup"
+    ) {
+      url.pathname = "/";
+      return NextResponse.redirect(url);
     }
   }
 

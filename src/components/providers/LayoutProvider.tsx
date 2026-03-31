@@ -22,9 +22,13 @@ export default function LayoutProvider({
         <Suspense fallback={null}>
           <AuthNotifications />
         </Suspense>
-        {!isDashboard && pathname !== "/signup" && <Navbar />}
+        {!isDashboard && pathname !== "/signup" && pathname !== "/login" && (
+          <Navbar />
+        )}
         <main className="flex-grow">{children}</main>
-        {!isDashboard && pathname !== "/signup" && <Footer />}
+        {!isDashboard && pathname !== "/signup" && pathname !== "/login" && (
+          <Footer />
+        )}
       </AIChatBotProvider>
     </CartAndFavoritesProvider>
   );

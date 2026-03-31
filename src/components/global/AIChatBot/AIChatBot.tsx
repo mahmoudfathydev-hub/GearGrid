@@ -32,6 +32,7 @@ export function AIChatBot({
 }: AIChatBotProps) {
   const { isComparePage } = usePageDetection();
 
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -199,7 +200,8 @@ Provide a detailed, helpful response based on the car data above. If no specific
   return (
     <>
       {isOpen && (
-        <div className="fixed bottom-4 right-4">
+        <div
+        >
           <Card className="w-96 h-150 flex flex-col shadow-lg border-2 border-blue-200 z-40">
             <CardHeader className="bg-linear-to-r from-blue-600 to-purple-600 text-white">
               <CardTitle className="flex items-center gap-2 text-lg">

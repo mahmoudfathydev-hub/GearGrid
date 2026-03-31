@@ -3,11 +3,28 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signupSchema, loginSchema, type SignupValues, type LoginValues } from "../validation/validation";
+import {
+  signupSchema,
+  loginSchema,
+  type SignupValues,
+  type LoginValues,
+} from "../validation/validation";
 import { createClient } from "@/lib/supabaseBrowser";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Loader2, Mail, Lock, User, Phone, ShieldCheck, Eye, EyeOff, KeyRound, LogIn, UserPlus } from "lucide-react";
+import {
+  Loader2,
+  Mail,
+  Lock,
+  User,
+  Phone,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  KeyRound,
+  LogIn,
+  UserPlus,
+} from "lucide-react";
 
 type AuthMode = "signup" | "login";
 
@@ -43,22 +60,26 @@ export default function AuthForm() {
         .single();
 
       if (bannedCheck?.is_banned) {
-        throw new Error("This account has been banned. Please contact support.");
+        throw new Error(
+          "This account has been banned. Please contact support.",
+        );
       }
 
       if (mode === "signup") {
         // 1. Sign up the user in Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-          options: {
-            data: {
-              name: values.name,
-              role: values.role,
-              number: values.number,
+        const { data: authData, error: authError } = await supabase.auth.signUp(
+          {
+            email: values.email,
+            password: values.password,
+            options: {
+              data: {
+                name: values.name,
+                role: values.role,
+                number: values.number,
+              },
             },
           },
-        });
+        );
 
         if (authError) throw authError;
 
@@ -75,7 +96,7 @@ export default function AuthForm() {
         if (dbError) throw dbError;
 
         toast.success("Account created successfully!");
-        
+
         // Redirect based on role
         if (values.role === "admin") {
           router.push("/dashboard?welcome=true");
@@ -120,14 +141,18 @@ export default function AuthForm() {
           {mode === "signup" ? "Create Account" : "Welcome Back"}
         </h1>
         <p className="text-sm text-neutral-400">
-          {mode === "signup" ? "Experience automotive excellence" : "Sign in to your account"}
+          {mode === "signup"
+            ? "Experience automotive excellence"
+            : "Sign in to your account"}
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         {mode === "signup" && (
           <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">Full Name</label>
+            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">
+              Full Name
+            </label>
             <div className="relative group">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-blue-500 transition-colors" />
               <input
@@ -140,13 +165,17 @@ export default function AuthForm() {
               />
             </div>
             {(errors as any).name && (
-              <p className="text-xs text-red-400 mt-1 ml-1">{(errors as any).name.message}</p>
+              <p className="text-xs text-red-400 mt-1 ml-1">
+                {(errors as any).name.message}
+              </p>
             )}
           </div>
         )}
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">Email Address</label>
+          <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">
+            Email Address
+          </label>
           <div className="relative group">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-blue-500 transition-colors" />
             <input
@@ -159,13 +188,17 @@ export default function AuthForm() {
             />
           </div>
           {errors.email && (
-            <p className="text-xs text-red-400 mt-1 ml-1">{errors.email.message}</p>
+            <p className="text-xs text-red-400 mt-1 ml-1">
+              {errors.email.message}
+            </p>
           )}
         </div>
 
         {mode === "signup" && (
           <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">Phone Number</label>
+            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">
+              Phone Number
+            </label>
             <div className="relative group">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-blue-500 transition-colors" />
               <input
@@ -173,18 +206,24 @@ export default function AuthForm() {
                 type="text"
                 placeholder="+1 234 567 890"
                 className={`w-full bg-neutral-900 border ${
-                  (errors as any).number ? "border-red-500" : "border-neutral-800"
+                  (errors as any).number
+                    ? "border-red-500"
+                    : "border-neutral-800"
                 } text-white rounded-xl px-10 py-2.5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-neutral-600`}
               />
             </div>
             {(errors as any).number && (
-              <p className="text-xs text-red-400 mt-1 ml-1">{(errors as any).number.message}</p>
+              <p className="text-xs text-red-400 mt-1 ml-1">
+                {(errors as any).number.message}
+              </p>
             )}
           </div>
         )}
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">Password</label>
+          <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">
+            Password
+          </label>
           <div className="relative group">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-blue-500 transition-colors" />
             <input
@@ -200,11 +239,17 @@ export default function AuthForm() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-white transition-colors p-1"
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
             </button>
           </div>
           {errors.password && (
-            <p className="text-xs text-red-400 mt-1 ml-1 leading-relaxed">{errors.password.message}</p>
+            <p className="text-xs text-red-400 mt-1 ml-1 leading-relaxed">
+              {errors.password.message}
+            </p>
           )}
         </div>
 
@@ -214,9 +259,13 @@ export default function AuthForm() {
               <ShieldCheck className="w-4 h-4" /> Select Role
             </label>
             <div className="grid grid-cols-2 gap-3">
-              <label className={`relative flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all duration-300 ${
-                selectedRole === "user" ? "bg-blue-600/10 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.1)]" : "bg-neutral-900 border-neutral-800 hover:border-neutral-700"
-              }`}>
+              <label
+                className={`relative flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all duration-300 ${
+                  selectedRole === "user"
+                    ? "bg-blue-600/10 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                    : "bg-neutral-900 border-neutral-800 hover:border-neutral-700"
+                }`}
+              >
                 <div className="flex items-center gap-2">
                   <input
                     {...register("role" as any)}
@@ -224,18 +273,32 @@ export default function AuthForm() {
                     value="user"
                     className="hidden"
                   />
-                  <span className={`text-sm font-medium transition-colors ${selectedRole === "user" ? "text-white" : "text-neutral-500"}`}>User</span>
+                  <span
+                    className={`text-sm font-medium transition-colors ${selectedRole === "user" ? "text-white" : "text-neutral-500"}`}
+                  >
+                    User
+                  </span>
                 </div>
-                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                  selectedRole === "user" ? "border-blue-500 bg-blue-500/20" : "border-neutral-800"
-                }`}>
-                  {selectedRole === "user" && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />}
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                    selectedRole === "user"
+                      ? "border-blue-500 bg-blue-500/20"
+                      : "border-neutral-800"
+                  }`}
+                >
+                  {selectedRole === "user" && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                  )}
                 </div>
               </label>
 
-              <label className={`relative flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all duration-300 ${
-                selectedRole === "admin" ? "bg-blue-600/10 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.1)]" : "bg-neutral-900 border-neutral-800 hover:border-neutral-700"
-              }`}>
+              <label
+                className={`relative flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all duration-300 ${
+                  selectedRole === "admin"
+                    ? "bg-blue-600/10 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                    : "bg-neutral-900 border-neutral-800 hover:border-neutral-700"
+                }`}
+              >
                 <div className="flex items-center gap-2">
                   <input
                     {...register("role" as any)}
@@ -243,24 +306,38 @@ export default function AuthForm() {
                     value="admin"
                     className="hidden"
                   />
-                  <span className={`text-sm font-medium transition-colors ${selectedRole === "admin" ? "text-white" : "text-neutral-500"}`}>Admin</span>
+                  <span
+                    className={`text-sm font-medium transition-colors ${selectedRole === "admin" ? "text-white" : "text-neutral-500"}`}
+                  >
+                    Admin
+                  </span>
                 </div>
-                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                  selectedRole === "admin" ? "border-blue-500 bg-blue-500/20" : "border-neutral-800"
-                }`}>
-                  {selectedRole === "admin" && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />}
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                    selectedRole === "admin"
+                      ? "border-blue-500 bg-blue-500/20"
+                      : "border-neutral-800"
+                  }`}
+                >
+                  {selectedRole === "admin" && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                  )}
                 </div>
               </label>
             </div>
             {(errors as any).role && (
-              <p className="text-xs text-red-400 mt-1 ml-1">{(errors as any).role.message}</p>
+              <p className="text-xs text-red-400 mt-1 ml-1">
+                {(errors as any).role.message}
+              </p>
             )}
           </div>
         )}
 
         {mode === "signup" && selectedRole === "admin" && (
           <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">Access Key</label>
+            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider ml-1">
+              Access Key
+            </label>
             <div className="relative group">
               <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-blue-500 transition-colors" />
               <input
@@ -268,16 +345,19 @@ export default function AuthForm() {
                 type="password"
                 placeholder="Enter admin key"
                 className={`w-full bg-neutral-900 border ${
-                  (errors as any).accessKey ? "border-red-500" : "border-neutral-800"
+                  (errors as any).accessKey
+                    ? "border-red-500"
+                    : "border-neutral-800"
                 } text-white rounded-xl px-10 py-3.5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-neutral-600`}
               />
             </div>
             {(errors as any).accessKey && (
-              <p className="text-xs text-red-400 mt-1 ml-1">{(errors as any).accessKey.message}</p>
+              <p className="text-xs text-red-400 mt-1 ml-1">
+                {(errors as any).accessKey.message}
+              </p>
             )}
           </div>
         )}
-
 
         <button
           type="submit"
@@ -287,24 +367,35 @@ export default function AuthForm() {
           {loading ? (
             <div className="flex items-center justify-center gap-3">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>{mode === "signup" ? "Creating Account..." : "Signing In..."}</span>
+              <span>
+                {mode === "signup" ? "Creating Account..." : "Signing In..."}
+              </span>
             </div>
           ) : (
             <span className="flex items-center justify-center gap-2">
-              {mode === "signup" ? "Sign Up" : "Sign In"} 
-              {mode === "signup" ? <UserPlus className="w-5 h-5" /> : <LogIn className="w-5 h-5" />}
+              {mode === "signup" ? "Sign Up" : "Sign In"}
+              {mode === "signup" ? (
+                <UserPlus className="w-5 h-5" />
+              ) : (
+                <LogIn className="w-5 h-5" />
+              )}
             </span>
           )}
         </button>
       </form>
 
       <div className="text-center pt-2">
-        <button
-          onClick={toggleMode}
-          className="text-sm text-neutral-400 hover:text-white transition-colors underline-offset-4 hover:underline"
-        >
-          {mode === "signup" ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
-        </button>
+        <p className="text-sm text-neutral-400">
+          {mode === "signup"
+            ? "Already have an account? "
+            : "Don't have an account? "}
+          <a
+            href={mode === "signup" ? "/login" : "/signup"}
+            className="text-blue-500 hover:text-blue-400 transition-colors underline-offset-4 hover:underline"
+          >
+            {mode === "signup" ? "Sign In" : "Sign Up"}
+          </a>
+        </p>
       </div>
     </div>
   );

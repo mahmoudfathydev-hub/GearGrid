@@ -18,21 +18,12 @@ import {
 import { createClient } from "@/lib/supabaseBrowser";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { TriangleAlertIcon } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 
 const Navbar = () => {
   const [mounted, setMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const theme = useAppSelector((state) => state.theme.theme);
   const dispatch = useAppDispatch();
@@ -57,35 +48,29 @@ const Navbar = () => {
     window.location.href = "/Favorites";
   };
 
-  const handleAuthAction = async () => {
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    setIsDeleteDialogOpen(false);
-    const loadingToast = toast.loading("Processing account deletion...");
+  const handleSignOut = async () => {
+    const loadingToast = toast.loading("Signing out...");
     try {
-      if (userEmail) {
-        const { error: dbError } = await supabase
-          .from("User")
-          .delete()
-          .eq("email", userEmail);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
 
-        if (dbError) throw dbError;
-      }
-
-      const { error: authError } = await supabase.auth.signOut();
-      if (authError) throw authError;
-
-      toast.success("Account deleted and signed out successfully.", {
+      toast.success("Signed out successfully.", {
         id: loadingToast,
       });
-      router.push("/signup");
+      router.push("/login");
     } catch (error: any) {
-      toast.error(error.message || "Something went wrong during deletion.", {
+      toast.error(error.message || "Something went wrong during sign out.", {
         id: loadingToast,
       });
       console.error("Sign out error:", error);
+    }
+  };
+
+  const handleAuthAction = () => {
+    if (isLoggedIn) {
+      handleSignOut();
+    } else {
+      router.push("/login");
     }
   };
 
@@ -146,7 +131,7 @@ const Navbar = () => {
     { id: 2, name: "Services", href: "/Services" },
     { id: 3, name: "Cars", href: "/Cars" },
     { id: 4, name: "Compare", href: "/compare" },
-    { id: 5, name: "Book Test Drive", href: "/bookTestDrive" }
+    { id: 5, name: "Book Test Drive", href: "/bookTestDrive" },
   ];
 
   return (
@@ -177,7 +162,10 @@ const Navbar = () => {
             <div className="hidden sm:flex items-center space-x-2">
               <HeartIcon itemCount={favoriteCount} onClick={handleHeartClick} />
 
-              <SignInButton onClick={handleAuthAction} />
+              <SignInButton
+                isLoggedIn={isLoggedIn}
+                onClick={handleAuthAction}
+              />
             </div>
 
             <MobileMenuButton
@@ -214,51 +202,12 @@ const Navbar = () => {
             </span>
           </div>
           <SignInButton
+            isLoggedIn={isLoggedIn}
             onClick={handleAuthAction}
             className="w-full justify-center"
           />
         </div>
       </MobileMenu>
-
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-neutral-900 border-red-500/50 p-0 overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.2)]">
-          <div className="p-6 text-center space-y-6">
-            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
-              <TriangleAlertIcon className="w-8 h-8 text-red-500" />
-            </div>
-
-            <div className="space-y-2">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-white text-center">
-                  Critical Action
-                </DialogTitle>
-                <DialogDescription className="text-red-400 font-medium text-center text-base">
-                  Are you sure you want to sign out? This will{" "}
-                  <span className="underline decoration-2 font-bold">
-                    permanently delete
-                  </span>{" "}
-                  your account data from GearGrid.
-                </DialogDescription>
-              </DialogHeader>
-            </div>
-
-            <div className="flex flex-col gap-3 pt-2">
-              <button
-                onClick={handleConfirmDelete}
-                className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-red-500/20"
-              >
-                Confirm Delete & Sign out
-              </button>
-              <button
-                onClick={() => setIsDeleteDialogOpen(false)}
-                className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold py-4 rounded-xl transition-all"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </nav>
   );
 };
